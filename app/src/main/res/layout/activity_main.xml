@@ -3,23 +3,57 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="#def"
+    android:gravity="center"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/start"
-        android:text="@string/start"
+    <TextView
+        android:id="@+id/loopPointStart"
+        android:textSize="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="40dp" />
+        android:ems="10"
+        android:inputType="time" />
+
+    <SeekBar
+        android:id="@+id/seekBarStart"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:max="1000"
+        android:progress="0"
+        />
+
+    <TextView
+        android:id="@+id/loopPointEnd"
+        android:textSize="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="time" />
+
+    <SeekBar
+        android:id="@+id/seekBarEnd"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:max="1000"
+        android:progress="1000"
+        />
 
     <Button
         android:id="@+id/stop"
-        android:text="@string/stop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="40dp" />
+        android:layout_margin="40dp"
+        android:text="@string/stop" />
+
+    <Button
+        android:id="@+id/start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:text="@string/start" />
 
 </LinearLayout>
