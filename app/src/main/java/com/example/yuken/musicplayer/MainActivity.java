@@ -29,8 +29,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements Runnable {
 
-    private SimpleDateFormat dataFormat =
-            new SimpleDateFormat("mm:ss.SS", Locale.JAPAN);
+    private SimpleDateFormat dataFormat = new SimpleDateFormat("mm:ss.SS", Locale.JAPAN);
 
     private Handler m_handler;
     private MediaPlayer mediaPlayer;
@@ -44,10 +43,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     //
     // ループポイント設定に必要最低限のBGM長(ms)
-    private int MUSIC_LENGTH_MIN = 5000;
+    private int MUSIC_LENGTH_MIN = 10000;
 
     // ループポイントの始点・終点設定に必要な間隔(ms)
-    private int LOOP_POINT_INTERVAL = 1000;
+    private int LOOP_POINT_INTERVAL = 5000;
 
     // 更新処理の間隔(ms)
     private int updateIntarval = 5;
@@ -65,12 +64,51 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private int prevProgressEnd = 0;
     ///
 
+    // 音楽の再生進捗率から時間に変換する
+    private int CalculateProgressToTime(int progressValue, int progressMax, int musicLength){
+        if(progressValue <= 0 || progressMax <= 0 || musicLength <= 0) {
+            Log.v("テスト", "[CalculateProgressToTime] = 0");
+            return 0;
+        }
+
+        if(progressMax <= progressValue){
+            Log.v("テスト", "[CalculateProgressToTime] = " + musicLength + " / " + progressMax);
+            return musicLength;
+        }
+
+        double _percent = (double)progressValue / (double)progressMax;
+        double _calculate = (double)musicLength * _percent;
+        Log.v("テスト", "[CalculateProgressToTime:" + _calculate + " = " + musicLength + " * (" + progressValue + " / " + progressMax + ")");
+        return (int)_calculate;
+    }
+
+    // 音楽の時間から再生率に変換する
+    private int CalculateTimeToProgress(int musicValue, int musicLength, int progressMax){
+        if(musicValue <= 0 || progressMax <= 0 || musicLength <= 0) {
+            Log.v("テスト", "[CalculateTimeToProgress] = 0");
+            return 0;
+        }
+
+        if(musicLength <= musicValue){
+            Log.v("テスト", "[CalculateTimeToProgress] = " + musicLength + " / " + progressMax);
+            return progressMax;
+        }
+
+        double _percent = (double)musicValue / (double)musicLength;
+        double _calculate = (double)progressMax * _percent;
+        Log.v("テスト", "[CalculateTimeToProgress:" + _calculate + " = " + musicLength + " * (" + musicValue + " / " + progressMax + ")");
+        return (int)_calculate;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         m_handler = new Handler();
         m_handler.postDelayed(this, this.updateIntarval);
         setContentView(R.layout.activity_main);
+
+        prevProgressStart = loopPointStart;
+        prevProgressEnd = loopPointEnd;
 
         // ループポイントの時間
         loopPointStartText = findViewById(R.id.loopPointStart);
@@ -80,12 +118,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // ループポイントの時間
         loopPointStartSeekBar = findViewById(R.id.seekBarStart);
-        loopPointEndSeekBar = findViewById(R.id.seekBarEnd);
-
         loopPointStartSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+                UpdateLoopPointSeekbar();
             }
 
             @Override
@@ -95,7 +131,25 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                UpdateLoopPointSeekbar();
+            }
+        });
 
+        loopPointEndSeekBar = findViewById(R.id.seekBarEnd);
+        loopPointEndSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                UpdateLoopPointSeekbar();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                UpdateLoopPointSeekbar();
             }
         });
 
@@ -151,18 +205,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
-        int prg = loopPointStartSeekBar.getProgress();
-        Log.v("テスト", "[LoopPointStart] = " + this.musicLength + " / " + prg);
-        loopPointStartText.setText(dataFormat.format(this.musicLength / prg));
-
         this.playTime += System.currentTimeMillis() - this.preTime;
 
         if((this.loopPointEnd - this.receptionEndPoint) <= this.playTime){
-            Log.v("テスト", "[" + this.playNumber + "] = " + this.loopPointEnd + " / " + this.playTime);
-
-//                mediaPlayer.seekTo(5943);
-//                this.arrayMediaPlayer[this.playNumber].seekTo(5943);
-
             this.playTime = this.loopPointStart;
             ///
             this.arrayMediaPlayer[this.playNumber].seekTo(this.loopPointStart);
@@ -178,49 +223,44 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, this.updateIntarval);
     }
 
-    // ループポイントを更新できるか確認
-    private void UpdateLoopPoint(){
-        if(this.musicLength <= this.MUSIC_LENGTH_MIN){ return; }
+    // シークバー操作でループポイント更新
+    private void UpdateLoopPointSeekbar(){
+        if(musicLength <= MUSIC_LENGTH_MIN){ return; }
 
-        int _max = loopPointStartSeekBar.getMax();
-        int _nowStart = loopPointStartSeekBar.getProgress();
-        int _nowEnd = loopPointEndSeekBar.getProgress();
-        int _difference = Math.abs(_nowEnd - _nowStart);
+        int _max        = loopPointStartSeekBar.getMax();
+        int _nowStart   = loopPointStartSeekBar.getProgress();
+        int _nowEnd     = loopPointEndSeekBar.getProgress();
+        int _difference = CalculateProgressToTime(Math.abs(_nowEnd - _nowStart), _max, musicLength);
+
+        Log.v("テスト", "[difference" +"(" + (_difference <= LOOP_POINT_INTERVAL) + "):" + _difference + " = " + _nowEnd + " - " + _nowStart + "][prev:" + prevProgressStart + ">>" + prevProgressEnd + "]");
 
         // ループポイントの始点・終点の間隔が短すぎる場合前回の値に戻す
-        if(_difference <= this.LOOP_POINT_INTERVAL){
-            this.loopPointStartSeekBar.setProgress(this.prevProgressStart);
-            this.loopPointEndSeekBar.setProgress(this.prevProgressEnd);
+        if(_difference <= LOOP_POINT_INTERVAL){
+            loopPointStartSeekBar.setProgress(CalculateTimeToProgress(prevProgressStart, musicLength, _max));
+            loopPointStart = prevProgressStart;
+
+            loopPointEndSeekBar.setProgress(CalculateTimeToProgress(prevProgressEnd, musicLength, _max));
+            loopPointEnd = prevProgressEnd;
+        }
+        else{
+            prevProgressStart   = loopPointStart;
+            loopPointStart      = CalculateProgressToTime(_nowStart, _max, musicLength);
+
+            prevProgressEnd     = loopPointEnd;
+            loopPointEnd        = CalculateProgressToTime(_nowEnd, _max, musicLength);
         }
 
-        this._updateLoopPoint(this.loopPointStartSeekBar, this.loopPointStartText);
-        this._updateLoopPoint(this.loopPointEndSeekBar, this.loopPointEndText);
+        Log.v("テスト", "[LoopPoint:" + musicLength +" / Start:" + loopPointStart + " / End:" + loopPointEnd);
+        loopPointStartText.setText(dataFormat.format(loopPointStart));
+        loopPointEndText.setText(dataFormat.format(loopPointEnd));
     }
 
-    // シークバーを動かした場合のループポイント更新
-    private void _updateLoopPoint(SeekBar seekBar, TextView textView){
-        int _now = seekBar.getProgress();
-        if(_now == 0){
-            Log.v("テスト", "[LoopPointStart] = " + this.musicLength + " / " + _now);
-            textView.setText(dataFormat.format(_now));
-            return;
-        }
-
-        int _max = seekBar.getMax();
-        int _value = this.musicLength * (_now / _max);
-        Log.v("テスト", "[LoopPointStart] = " + this.musicLength + " / " + _value);
-        textView.setText(dataFormat.format(_value));
-    }
-
+    // BGMを実際にロードする
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private boolean audioSetup(){
         boolean fileCheck = false;
 
         // インタンスを生成
-/*
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setLooping(true);
-*/
         arrayMediaPlayer = new MediaPlayer[] { new MediaPlayer(), new MediaPlayer() };
 
         //音楽ファイル名, あるいはパス
@@ -240,14 +280,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     afdescripter.getLength());
                 _media.prepare();
             }
-/*
-            mediaPlayer.setDataSource(afdescripter.getFileDescriptor(),
-                    afdescripter.getStartOffset(),
-                    afdescripter.getLength());
-            // 音量調整を端末のボタンに任せる
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
-            mediaPlayer.prepare();
-*/
 
             fileCheck = true;
         } catch (IOException e1) {
@@ -259,16 +291,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private void audioPlay() {
 
-        Log.v("テスト", "playNumber:" + this.playNumber);
-
-//        if (mediaPlayer == null) {
         boolean _mediaUnset = true;
         if (this.arrayMediaPlayer != null) {
             _mediaUnset = false;
             for(MediaPlayer _media : arrayMediaPlayer){
-
-                Log.v("テスト", " _media:" + (_media != null));
-
                 if(_media != null){ continue; }
                 _mediaUnset = true;
                 break;
@@ -287,23 +313,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         }
         else{
-/*
-            // 繰り返し再生する場合
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-            // リソースの解放
-            mediaPlayer.release();
-*/
             Log.v("テスト", " arrayMediaPlayer[" + this.playNumber + "]:" + (this.arrayMediaPlayer[this.playNumber] != null));
-
-            // TODO:ここいらないのでは？
-            /*
-            // 繰り返し再生する場合
-            this.arrayMediaPlayer[this.playNumber].stop();
-            this.arrayMediaPlayer[this.playNumber].reset();
-            // リソースの解放
-            this.arrayMediaPlayer[this.playNumber].release();
-            */
         }
 
         // 再生する
@@ -344,46 +354,25 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     private void audioStop() {
+        // TODO:そもそもBGM止めたとしても完全に開放する必要ない
+        this.arrayMediaPlayer[this.playNumber].pause();
 
-        //
+        /*
         this.preTime = 0;
         this.musicLength = 0;
         this.playTime = 0;
         this.playNumber = 0;
-        //
-/*
-        // 再生終了
-        mediaPlayer.stop();
-        // リセット
-        mediaPlayer.reset();
-        // リソースの解放
-        mediaPlayer.release();
 
-        mediaPlayer = null;
-*/
         // foreachからnullクリアする場合はコピーされた[_media]がクリアされるだけで
         // 実際の配列内のメディアプレイヤーはnullクリアされてなかった
         // 明示的に配列指定でのnullクリアでなければnullにならなかった
-        for(MediaPlayer _media : arrayMediaPlayer){
-            if(_media == null) { continue; }
-            _media.stop();      // 再生終了
-            _media.reset();     // リセット
-            _media.release();   // リソースの解放
-            _media = null;
-        }
-        Log.v("テスト", "MediaPlayer Stop / arrayMediaPlayer = " + (arrayMediaPlayer == null));
-        for(MediaPlayer _media : arrayMediaPlayer){
-            Log.v("テスト", "  _media = " + (_media == null));
-        }
-
-
         for(int i = 0; i < arrayMediaPlayer.length; i++){
             if(arrayMediaPlayer[i] == null) { continue; }
+            arrayMediaPlayer[i].stop();      // 再生終了
+            arrayMediaPlayer[i].reset();     // リセット
+            arrayMediaPlayer[i].release();   // リソースの解放
             arrayMediaPlayer[i] = null;
         }
-        Log.v("テスト", "MediaPlayer Stop / arrayMediaPlayer = " + (arrayMediaPlayer == null));
-        for(MediaPlayer _media : arrayMediaPlayer){
-            Log.v("テスト", "  _media = " + (_media == null));
-        }
+        */
     }
 }
