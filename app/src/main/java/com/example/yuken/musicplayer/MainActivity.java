@@ -62,6 +62,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private int prevProgressStart = 0;
     private int prevProgressEnd = 0;
+
+    private NumberPickerDialogFragment numberpickerDialogFragment;
     ///
 
     // 音楽の再生進捗率から時間に変換する
@@ -182,6 +184,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 */
             // 音楽停止
             audioStop();
+            }
+        });
+
+
+        // DialogFragment表示をボタンに登録
+        numberpickerDialogFragment = new NumberPickerDialogFragment();
+        Button buttonNumberPicker = findViewById(R.id.btn_push);
+        buttonNumberPicker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
     }

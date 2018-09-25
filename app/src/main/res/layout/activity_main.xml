@@ -43,6 +43,13 @@
         />
 
     <Button
+        android:id="@+id/start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="40dp"
+        android:text="@string/start" />
+
+    <Button
         android:id="@+id/stop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -50,10 +57,9 @@
         android:text="@string/stop" />
 
     <Button
-        android:id="@+id/start"
+        android:id="@+id/btn_push"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="40dp"
-        android:text="@string/start" />
+        android:text="Number_Picker" />
 
 </LinearLayout>
