@@ -194,6 +194,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // ダイアログに値を渡す
+                Bundle bundle = new Bundle();
+                bundle.putBoolean("OpenStart", true);
+                bundle.putInt("LoopPointStart", loopPointStart);
+                bundle.putInt("LoopPointEnd", loopPointEnd);
+                bundle.putInt("MusicLength", musicLength);
+                numberpickerDialogFragment.setArguments(bundle);
+
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
