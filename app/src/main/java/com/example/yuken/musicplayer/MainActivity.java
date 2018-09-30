@@ -27,7 +27,23 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+/**
+ * The type Main activity.
+ */
 public class MainActivity extends AppCompatActivity implements Runnable {
+
+    public enum DialogType {
+        START,
+        END
+    };
+
+    /**
+     * ordinal から指定した Enum の要素に変換する汎用関数
+     */
+    public static <E extends Enum<E>> E fromOrdinal(Class<E> enumClass, int ordinal) {
+        E[] enumArray = enumClass.getEnumConstants();
+        return enumArray[ordinal];
+    }
 
     private SimpleDateFormat dataFormat = new SimpleDateFormat("mm:ss.SS", Locale.JAPAN);
 
@@ -64,9 +80,18 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private int prevProgressEnd = 0;
 
     private NumberPickerDialogFragment numberpickerDialogFragment;
+
+    private boolean numberpickerUpdate = false;
     ///
 
-    // 音楽の再生進捗率から時間に変換する
+    /**
+     * シークバーの位置から時間に変換する
+     *
+     * @param progressValue
+     * @param progressMax
+     * @param musicLength
+     * @return
+     */
     private int CalculateProgressToTime(int progressValue, int progressMax, int musicLength){
         if(progressValue <= 0 || progressMax <= 0 || musicLength <= 0) {
             Log.v("テスト", "[CalculateProgressToTime] = 0");
@@ -84,7 +109,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return (int)_calculate;
     }
 
-    // 音楽の時間から再生率に変換する
+    /**
+     * 時間からシークバーの位置に変換する
+     *
+     * @param musicValue
+     * @param musicLength
+     * @param progressMax
+     * @return
+     */
     private int CalculateTimeToProgress(int musicValue, int musicLength, int progressMax){
         if(musicValue <= 0 || progressMax <= 0 || musicLength <= 0) {
             Log.v("テスト", "[CalculateTimeToProgress] = 0");
@@ -102,6 +134,39 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return (int)_calculate;
     }
 
+    /**
+     * 前回のループポイントを更新
+     */
+    private void UpdatePrevLoopPoint(){
+        prevProgressStart   = loopPointStart;
+        prevProgressEnd     = loopPointEnd;
+    }
+
+    /**
+     * ループポイントのテキスト更新
+     */
+    private void UpdateLoopPointText(){
+        if(loopPointStartText == null || loopPointStartText == null){
+            return;
+        }
+
+        loopPointStartText.setText(dataFormat.format(loopPointStart));
+        loopPointEndText.setText(dataFormat.format(loopPointEnd));
+    }
+
+    /**
+     * シークバー位置をループポイントに対応させる
+     */
+    private void UpdateLoopPointSeekbar(){
+        if(loopPointStartSeekBar == null || loopPointEndSeekBar == null){
+            return;
+        }
+
+        int _max = loopPointStartSeekBar.getMax();
+        loopPointStartSeekBar.setProgress(CalculateTimeToProgress(loopPointStart, musicLength, _max));
+        loopPointEndSeekBar.setProgress(CalculateTimeToProgress(loopPointEnd, musicLength, _max));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,21 +174,24 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, this.updateIntarval);
         setContentView(R.layout.activity_main);
 
-        prevProgressStart = loopPointStart;
-        prevProgressEnd = loopPointEnd;
+        UpdatePrevLoopPoint();
 
         // ループポイントの時間
         loopPointStartText = findViewById(R.id.loopPointStart);
-        loopPointStartText.setText(dataFormat.format(loopPointStart));
         loopPointEndText = findViewById(R.id.loopPointEnd);
-        loopPointEndText.setText(dataFormat.format(loopPointEnd));
+        UpdateLoopPointText();
 
         // ループポイントの時間
         loopPointStartSeekBar = findViewById(R.id.seekBarStart);
         loopPointStartSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                UpdateLoopPointSeekbar();
+                // ナンバーピッカーから設定した直後は処理しない
+                if(numberpickerUpdate) {
+                    return;
+                }
+
+                UpdateSeekbar();
             }
 
             @Override
@@ -133,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateLoopPointSeekbar();
+                UpdateSeekbar();
             }
         });
 
@@ -141,7 +209,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointEndSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                UpdateLoopPointSeekbar();
+                // ナンバーピッカーから設定した直後は処理しない
+                if(numberpickerUpdate) {
+                    return;
+                }
+
+                UpdateSeekbar();
             }
 
             @Override
@@ -151,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateLoopPointSeekbar();
+                UpdateSeekbar();
             }
         });
 
@@ -190,13 +263,29 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // DialogFragment表示をボタンに登録
         numberpickerDialogFragment = new NumberPickerDialogFragment();
-        Button buttonNumberPicker = findViewById(R.id.btn_push);
-        buttonNumberPicker.setOnClickListener(new View.OnClickListener() {
+        Button buttonNumberPickerStart = findViewById(R.id.btnLoopPointStart);
+        buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // ダイアログに値を渡す
                 Bundle bundle = new Bundle();
-                bundle.putBoolean("OpenStart", true);
+                bundle.putInt("DialogType", DialogType.START.ordinal());
+                bundle.putInt("LoopPointStart", loopPointStart);
+                bundle.putInt("LoopPointEnd", loopPointEnd);
+                bundle.putInt("MusicLength", musicLength);
+                numberpickerDialogFragment.setArguments(bundle);
+
+                numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
+            }
+        });
+
+        // ループポイント[End]
+        Button buttonNumberPickerEnd = findViewById(R.id.btnLoopPointEnd);
+        buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putInt("DialogType", DialogType.END.ordinal());
                 bundle.putInt("LoopPointStart", loopPointStart);
                 bundle.putInt("LoopPointEnd", loopPointEnd);
                 bundle.putInt("MusicLength", musicLength);
@@ -226,6 +315,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
+        numberpickerUpdate = false;
+
         this.playTime += System.currentTimeMillis() - this.preTime;
 
         if((this.loopPointEnd - this.receptionEndPoint) <= this.playTime){
@@ -244,8 +335,32 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, this.updateIntarval);
     }
 
-    // シークバー操作でループポイント更新
-    private void UpdateLoopPointSeekbar(){
+    /**
+     * ナンバーピッカーに設定した値で更新
+     *
+     * @param dialogType    表示中のナンバーピッカー(スタート/エンド)
+     * @param loopPoint     ループポイント
+     */
+    public void UpdateNumbetPickerr(DialogType dialogType, int loopPoint){
+        numberpickerUpdate  = true;
+
+        UpdatePrevLoopPoint();
+
+        if(dialogType == DialogType.START){
+            this.loopPointStart = loopPoint;
+        }
+        else if(dialogType == DialogType.END){
+            this.loopPointEnd   = loopPoint;
+        }
+
+        UpdateLoopPointText();
+        UpdateLoopPointSeekbar();
+    }
+
+    /**
+     * シークバー操作でループポイント更新
+     */
+    private void UpdateSeekbar(){
         if(musicLength <= MUSIC_LENGTH_MIN){ return; }
 
         int _max        = loopPointStartSeekBar.getMax();
@@ -257,23 +372,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // ループポイントの始点・終点の間隔が短すぎる場合前回の値に戻す
         if(_difference <= LOOP_POINT_INTERVAL){
-            loopPointStartSeekBar.setProgress(CalculateTimeToProgress(prevProgressStart, musicLength, _max));
-            loopPointStart = prevProgressStart;
-
-            loopPointEndSeekBar.setProgress(CalculateTimeToProgress(prevProgressEnd, musicLength, _max));
-            loopPointEnd = prevProgressEnd;
+            loopPointStart  = prevProgressStart;
+            loopPointEnd    = prevProgressEnd;
+            UpdateLoopPointSeekbar();
         }
         else{
-            prevProgressStart   = loopPointStart;
+            UpdatePrevLoopPoint();
             loopPointStart      = CalculateProgressToTime(_nowStart, _max, musicLength);
-
-            prevProgressEnd     = loopPointEnd;
             loopPointEnd        = CalculateProgressToTime(_nowEnd, _max, musicLength);
         }
 
-        Log.v("テスト", "[LoopPoint:" + musicLength +" / Start:" + loopPointStart + " / End:" + loopPointEnd);
-        loopPointStartText.setText(dataFormat.format(loopPointStart));
-        loopPointEndText.setText(dataFormat.format(loopPointEnd));
+        UpdateLoopPointText();
     }
 
     // BGMを実際にロードする

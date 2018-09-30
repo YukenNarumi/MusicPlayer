@@ -26,3 +26,31 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
+
+project.ext {
+    if (android.hasProperty('applicationVariants')) {
+        androidVariants = android.applicationVariants
+    }else if (android.hasProperty('libraryVariants')) {
+        androidVariants = android.libraryVariants
+    }
+}
+project.androidVariants.all { variant ->
+    task("javadoc", type: Javadoc, overwrite: true) {
+        title = "YOUR_APP_NAME"
+        source = variant.javaCompile.source
+        ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+        classpath = files(variant.javaCompile.classpath.files) + files(ext.androidJar)
+
+        options {
+            links("http://docs.oracle.com/javase/jp/7/api/");
+            linksOffline("http://d.android.com/reference", "${android.sdkDirectory}/docs/reference")
+            setMemberLevel(JavadocMemberLevel.PUBLIC)
+            docEncoding = 'UTF-8'
+            encoding = 'UTF-8'
+            charSet = 'UTF-8'
+        }
+
+        exclude '**/BuildConfig.java'
+        exclude '**/R.java'
+    }
+}
