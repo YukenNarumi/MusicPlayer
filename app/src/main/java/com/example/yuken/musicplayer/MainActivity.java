@@ -32,7 +32,7 @@ import java.util.Locale;
  */
 public class MainActivity extends AppCompatActivity implements Runnable {
 
-    public enum DialogType {
+    public enum LoopType {
         START,
         END
     };
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     return;
                 }
 
-                UpdateSeekbar();
+                UpdateSeekbar(LoopType.START);
             }
 
             @Override
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateSeekbar();
+                UpdateSeekbar(LoopType.START);
             }
         });
 
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     return;
                 }
 
-                UpdateSeekbar();
+                UpdateSeekbar(LoopType.END);
             }
 
             @Override
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateSeekbar();
+                UpdateSeekbar(LoopType.END);
             }
         });
 
@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onClick(View v) {
                 // ダイアログに値を渡す
                 Bundle bundle = new Bundle();
-                bundle.putInt("DialogType", DialogType.START.ordinal());
+                bundle.putInt("LoopType", LoopType.START.ordinal());
                 bundle.putInt("LoopPointStart", loopPointStart);
                 bundle.putInt("LoopPointEnd", loopPointEnd);
                 bundle.putInt("MusicLength", musicLength);
@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @Override
             public void onClick(View v) {
                 Bundle bundle = new Bundle();
-                bundle.putInt("DialogType", DialogType.END.ordinal());
+                bundle.putInt("LoopType", LoopType.END.ordinal());
                 bundle.putInt("LoopPointStart", loopPointStart);
                 bundle.putInt("LoopPointEnd", loopPointEnd);
                 bundle.putInt("MusicLength", musicLength);
@@ -341,15 +341,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @param dialogType    表示中のナンバーピッカー(スタート/エンド)
      * @param loopPoint     ループポイント
      */
-    public void UpdateNumbetPickerr(DialogType dialogType, int loopPoint){
+    public void UpdateNumbetPickerr(LoopType dialogType, int loopPoint){
         numberpickerUpdate  = true;
 
         UpdatePrevLoopPoint();
 
-        if(dialogType == DialogType.START){
+        if(dialogType == LoopType.START){
             this.loopPointStart = loopPoint;
         }
-        else if(dialogType == DialogType.END){
+        else if(dialogType == LoopType.END){
             this.loopPointEnd   = loopPoint;
         }
 
@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * シークバー操作でループポイント更新
      */
-    private void UpdateSeekbar(){
+    private void UpdateSeekbar(LoopType loopType){
         if(musicLength <= MUSIC_LENGTH_MIN){ return; }
 
         int _max        = loopPointStartSeekBar.getMax();
@@ -368,18 +368,22 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         int _nowEnd     = loopPointEndSeekBar.getProgress();
         int _difference = CalculateProgressToTime(Math.abs(_nowEnd - _nowStart), _max, musicLength);
 
-        Log.v("テスト", "[difference" +"(" + (_difference <= LOOP_POINT_INTERVAL) + "):" + _difference + " = " + _nowEnd + " - " + _nowStart + "][prev:" + prevProgressStart + ">>" + prevProgressEnd + "]");
+        Log.v("テスト", "[difference" +"(" + (_difference <= LOOP_POINT_INTERVAL) + "):" + _difference + " = " + _nowEnd + " - " + _nowStart + "][start:" + prevProgressStart + ">>" + loopPointStart + "][end:" + prevProgressEnd + ">>" + loopPointEnd + "]");
 
         // ループポイントの始点・終点の間隔が短すぎる場合前回の値に戻す
         if(_difference <= LOOP_POINT_INTERVAL){
-            loopPointStart  = prevProgressStart;
-            loopPointEnd    = prevProgressEnd;
+            switch(loopType){
+            case START: loopPointStart  = prevProgressStart;    break;
+            case END:   loopPointEnd    = prevProgressEnd;      break;
+            }
             UpdateLoopPointSeekbar();
         }
         else{
             UpdatePrevLoopPoint();
-            loopPointStart      = CalculateProgressToTime(_nowStart, _max, musicLength);
-            loopPointEnd        = CalculateProgressToTime(_nowEnd, _max, musicLength);
+            switch(loopType){
+            case START: loopPointStart  = CalculateProgressToTime(_nowStart, _max, musicLength);    break;
+            case END:   loopPointEnd    = CalculateProgressToTime(_nowEnd, _max, musicLength);      break;
+            }
         }
 
         UpdateLoopPointText();

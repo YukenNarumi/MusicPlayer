@@ -19,7 +19,7 @@ public class NumberPickerDialogFragment extends DialogFragment {
     private static final int RANGE_TIME_SECOND      = 60;
     private static final int RANGE_TIME_MILLISECOND = 1000;
 
-    private MainActivity.DialogType dialogType;
+    private MainActivity.LoopType loopType;
     private NumberPicker numberpickerMinute;
     private NumberPicker numberpickerSecond;
     private NumberPicker numberpickerMilliSecond;
@@ -94,8 +94,8 @@ public class NumberPickerDialogFragment extends DialogFragment {
         numberpickerMilliSecond.setMaxValue(ConvertMaxTimeToMilliSecond(_musicLength));
 
         // 現在の設定時間を反映
-        dialogType = MainActivity.fromOrdinal(MainActivity.DialogType.class, getArguments().getInt("DialogType"));
-        String _loopPointKey = (dialogType == MainActivity.DialogType.START ? "LoopPointStart" : "LoopPointEnd");
+        loopType = MainActivity.fromOrdinal(MainActivity.LoopType.class, getArguments().getInt("LoopType"));
+        String _loopPointKey = (loopType == MainActivity.LoopType.START ? "LoopPointStart" : "LoopPointEnd");
         int _loopPoint = getArguments().getInt(_loopPointKey);
         Log.v("テスト", "ダイアログ値渡しテスト:" + ConvertTimeToMintes(_loopPoint) + "/" + ConvertTimeToSecond(_loopPoint) + "/" + ConvertTimeToMilliSecond(_loopPoint));
         numberpickerMinute.setValue(ConvertTimeToMintes(_loopPoint));
@@ -123,9 +123,9 @@ public class NumberPickerDialogFragment extends DialogFragment {
 
         // TODO:このタイミングで設定できるか判定する
 
-        Log.v("テスト", "SetNumbetPickerrValue:" + dialogType);
+        Log.v("テスト", "SetNumbetPickerrValue:" + loopType);
 
         MainActivity mainActivity = (MainActivity) getActivity();
-        mainActivity.UpdateNumbetPickerr(dialogType, _total);
+        mainActivity.UpdateNumbetPickerr(loopType, _total);
     }
 }
