@@ -69,12 +69,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     // ループポイント(終点)の受付猶予(ms)
     private int receptionEndPoint = 30;
 
-    private int loopPointStart = 5943; // ms
-    private int loopPointEnd = 10943; // ms
-    private long preTime;
-    private int musicLength;
-    private int playTime;
-    private int playNumber = 0;
+    private int loopPointStart  = 0; // ms
+    private int loopPointEnd    = 0; // ms
+    private long preTime        = 0;
+    private int musicLength     = 0;
+    private int playTime        = 0;
+    private int playNumber      = 0;
 
     private int prevProgressStart = 0;
     private int prevProgressEnd = 0;
@@ -82,7 +82,45 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private NumberPickerDialogFragment numberpickerDialogFragment;
 
     private boolean numberpickerUpdate = false;
+
+    private boolean loadCompletedBGM = false;
     ///
+
+    /**
+     * メディアプレイヤーが設定済みか
+     *
+     * @return true:設定済み / false:未設定がある
+     */
+    private boolean IsMediaPlayer(){
+        if(arrayMediaPlayer == null){
+            return false;
+        }
+        for(MediaPlayer _media : arrayMediaPlayer){
+            if(_media != null){
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 再生中のメディアプレイヤーがあるか
+     *
+     * @return true:再生中 / false:未再生
+     */
+    private boolean IsPlayingMediaPlayer(){
+        if(!IsMediaPlayer()){
+            return false;
+        }
+
+        for(MediaPlayer _media : arrayMediaPlayer){
+            if(_media.isPlaying()){
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * シークバーの位置から時間に変換する
@@ -135,6 +173,30 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * 初期化処理
+     */
+    private void Initialize(){
+        if(!IsMediaPlayer()){
+            Toast.makeText(getApplication(), "Error: Call timing is incorrect [Initialize()]", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        musicLength         = arrayMediaPlayer[0].getDuration();
+        loopPointStart      = 0;
+        loopPointEnd        = musicLength;
+        preTime             = 0;
+        playTime            = 0;
+        playNumber          = 0;
+        prevProgressStart   = 0;
+        prevProgressEnd     = 0;
+        numberpickerUpdate  = false;
+
+        UpdatePrevLoopPoint();
+        UpdateLoopPointText();
+        UpdateLoopPointSeekbar();
+    }
+
+    /**
      * 前回のループポイントを更新
      */
     private void UpdatePrevLoopPoint(){
@@ -167,6 +229,34 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointEndSeekBar.setProgress(CalculateTimeToProgress(loopPointEnd, musicLength, _max));
     }
 
+    /**
+     * メディアプレイヤーをすべて開放
+     */
+    private void ReleaseMediaPlayer(){
+        if(arrayMediaPlayer == null){
+            return;
+        }
+        for(int i = 0; i < arrayMediaPlayer.length; i++){
+            if(arrayMediaPlayer[i] == null){
+                continue;
+            }
+
+            if(arrayMediaPlayer[i].isPlaying()) {
+                arrayMediaPlayer[i].stop();
+            }
+            arrayMediaPlayer[i].stop();
+            arrayMediaPlayer[i].reset();
+            arrayMediaPlayer[i].release();
+            arrayMediaPlayer[i] = null;
+        }
+        arrayMediaPlayer = null;
+    }
+
+    /**
+     *
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -229,6 +319,21 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
 
         //
+
+        // BGMロードボタン
+        Button buttonLoad = findViewById(R.id.loadButton);
+        buttonLoad.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public void onClick(View v) {
+                // BGMロードに成功したら初期化
+                loadCompletedBGM = LoadBGM();
+                if(!loadCompletedBGM){
+                    return;
+                }
+                Initialize();
+            }
+        });
 
         // 音楽開始ボタン
         Button buttonStart = findViewById(R.id.start);
@@ -296,6 +401,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
     }
 
+    /**
+     * 周期的に呼ばれる更新処理
+     */
     @Override
     public void run() {
 
@@ -307,10 +415,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 */
-        boolean _runEnd = (this.arrayMediaPlayer == null);
-        if(!_runEnd){ _runEnd = (this.arrayMediaPlayer[this.playNumber] == null); }
-        if(!_runEnd){ _runEnd = (this.musicLength <= 0); }
-        if(_runEnd) {
+        if(!IsPlayingMediaPlayer()) {
             m_handler.postDelayed(this, this.updateIntarval);
             return;
         }
@@ -389,7 +494,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         UpdateLoopPointText();
     }
 
-    // BGMを実際にロードする
+    /**
+     * BGMを実際にロードする
+     *
+     * @return true:成功 / false:失敗
+     */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private boolean audioSetup(){
         boolean fileCheck = false;
@@ -423,35 +532,65 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return fileCheck;
     }
 
-    private void audioPlay() {
+    /**
+     * BGMを実際にロードする
+     *
+     * @return 成否
+     */
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private boolean LoadBGM(){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
-        boolean _mediaUnset = true;
-        if (this.arrayMediaPlayer != null) {
-            _mediaUnset = false;
-            for(MediaPlayer _media : arrayMediaPlayer){
-                if(_media != null){ continue; }
-                _mediaUnset = true;
-                break;
+        ReleaseMediaPlayer();
+
+        // インタンスを生成
+        arrayMediaPlayer = new MediaPlayer[] { new MediaPlayer(), new MediaPlayer() };
+
+        //音楽ファイル名, あるいはパス
+        String filePath = "am_white.mp3";
+
+        // assetsから mp3 ファイルを読み込み
+        try(AssetFileDescriptor afdescripter = getAssets().openFd(filePath))
+        {
+            Log.v("テスト", "[LoadBGM:try]");
+            // 音量調整を端末のボタンに任せる
+            setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+            // MediaPlayerに読み込んだ音楽ファイルを指定
+            for(int i = 0; i < arrayMediaPlayer.length; i++){
+                arrayMediaPlayer[i].setLooping(true);
+                arrayMediaPlayer[i].setDataSource(afdescripter.getFileDescriptor(),
+                        afdescripter.getStartOffset(),
+                        afdescripter.getLength());
+                arrayMediaPlayer[i].prepare();
             }
+        } catch (IOException e1) {
+            Log.v("テスト", "[LoadBGM:catch]");
+            e1.printStackTrace();
+            return false;
         }
-        if (_mediaUnset) {
-            // audio ファイルを読出し
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                if (audioSetup()){
-                    Toast.makeText(getApplication(), "Rread audio file", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-            }
+        Log.v("テスト", "[LoadBGM:success]");
+        return true;
+    }
+
+    /**
+     * BGM再生開始
+     */
+    private void audioPlay() {
+        if(!loadCompletedBGM){
+            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+            return;
         }
-        else{
-            Log.v("テスト", " arrayMediaPlayer[" + this.playNumber + "]:" + (this.arrayMediaPlayer[this.playNumber] != null));
+
+        if(IsPlayingMediaPlayer()) {
+            Toast.makeText(getApplication(), "Error: playing MediaPlayer.", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         // 再生する
-//        mediaPlayer.start();
         this.arrayMediaPlayer[this.playNumber].start();
 
         for(MediaPlayer _media : arrayMediaPlayer){
@@ -460,13 +599,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             _media.seekTo(this.loopPointStart);
         }
 
-        //
         this.preTime = System.currentTimeMillis();
-//        this.musicLength = mediaPlayer.getDuration();
         this.musicLength = this.arrayMediaPlayer[this.playNumber].getDuration();
             // [MediaPlayer.getDuration()] = 読み込んだファイルの全体時間を取得 のはず
         this.playTime = 0;
-        //
 
         // 終了を検知するリスナー
 /*
@@ -487,7 +623,19 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
     }
 
+    /**
+     * BGM停止
+     */
     private void audioStop() {
+        if(!loadCompletedBGM){
+            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if(!IsPlayingMediaPlayer()) {
+            return;
+        }
+
         // TODO:そもそもBGM止めたとしても完全に開放する必要ない
         this.arrayMediaPlayer[this.playNumber].pause();
 
