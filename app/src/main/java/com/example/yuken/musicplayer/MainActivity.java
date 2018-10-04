@@ -51,9 +51,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private MediaPlayer mediaPlayer;
     private MediaPlayer[] arrayMediaPlayer;
 
+    private TextView nowTimeText;
     private TextView loopPointStartText;
     private TextView loopPointEndText;
 
+    private SeekBar nowTimeSeekBar;
     private SeekBar loopPointStartSeekBar;
     private SeekBar loopPointEndSeekBar;
 
@@ -230,6 +232,26 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * 現在の時間更新
+     */
+    private void UpdateNowTime(){
+        if(nowTimeText == null || nowTimeSeekBar == null){
+            return;
+        }
+
+        int _max = nowTimeSeekBar.getMax();
+        if(!IsPlayingMediaPlayer()) {
+            nowTimeText.setText(dataFormat.format(0) + "/" + dataFormat.format(musicLength));
+            nowTimeSeekBar.setProgress(CalculateTimeToProgress(0, musicLength, _max));
+            return;
+        }
+
+        int _nowPosition = arrayMediaPlayer[playNumber].getCurrentPosition();
+        nowTimeText.setText(dataFormat.format(_nowPosition) + "/" + dataFormat.format(musicLength));
+        nowTimeSeekBar.setProgress(CalculateTimeToProgress(_nowPosition, musicLength, _max));
+    }
+
+    /**
      * メディアプレイヤーをすべて開放
      */
     private void ReleaseMediaPlayer(){
@@ -267,9 +289,28 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         UpdatePrevLoopPoint();
 
         // ループポイントの時間
+        nowTimeText = findViewById(R.id.textNowTime);
         loopPointStartText = findViewById(R.id.loopPointStart);
         loopPointEndText = findViewById(R.id.loopPointEnd);
         UpdateLoopPointText();
+
+        nowTimeSeekBar = findViewById(R.id.seekBarNowTime);
+        nowTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO:操作中のシークバーから時間変更
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO:操作を終えた時点で再生時間変更
+            }
+        });
 
         // ループポイントの時間
         loopPointStartSeekBar = findViewById(R.id.seekBarStart);
@@ -415,6 +456,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 */
+        UpdateNowTime();
+
         if(!IsPlayingMediaPlayer()) {
             m_handler.postDelayed(this, this.updateIntarval);
             return;
