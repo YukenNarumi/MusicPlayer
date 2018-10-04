@@ -86,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean numberpickerUpdate = false;
 
     private boolean loadCompletedBGM = false;
+
+    private boolean operationTimeBar = false;
     ///
 
     /**
@@ -210,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * ループポイントのテキスト更新
      */
     private void UpdateLoopPointText(){
-        if(loopPointStartText == null || loopPointStartText == null){
+        if(loopPointStartText == null || loopPointEndText == null){
             return;
         }
 
@@ -239,15 +241,27 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
+        nowTimeSeekBar.setEnabled(loadCompletedBGM);
+
         int _max = nowTimeSeekBar.getMax();
-        if(!IsPlayingMediaPlayer()) {
-            nowTimeText.setText(dataFormat.format(0) + "/" + dataFormat.format(musicLength));
+        if(!IsMediaPlayer()) {
+            String _text = dataFormat.format(0) + "/" + dataFormat.format(musicLength);
+            nowTimeText.setText(_text);
             nowTimeSeekBar.setProgress(CalculateTimeToProgress(0, musicLength, _max));
             return;
         }
 
         int _nowPosition = arrayMediaPlayer[playNumber].getCurrentPosition();
-        nowTimeText.setText(dataFormat.format(_nowPosition) + "/" + dataFormat.format(musicLength));
+
+        if(operationTimeBar){
+            int _now = CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength);
+            String _text = dataFormat.format(_now) + "/" + dataFormat.format(musicLength);
+            nowTimeText.setText(_text);
+            return;
+        }
+
+        String _text = dataFormat.format(_nowPosition) + "/" + dataFormat.format(musicLength);
+        nowTimeText.setText(_text);
         nowTimeSeekBar.setProgress(CalculateTimeToProgress(_nowPosition, musicLength, _max));
     }
 
@@ -303,12 +317,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                operationTimeBar = true;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 // TODO:操作を終えた時点で再生時間変更
+                operationTimeBar = false;
+                arrayMediaPlayer[playNumber].seekTo(CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength));
             }
         });
 
@@ -612,6 +628,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         } catch (IOException e1) {
             Log.v("テスト", "[LoadBGM:catch]");
+            ReleaseMediaPlayer();
             e1.printStackTrace();
             return false;
         }
