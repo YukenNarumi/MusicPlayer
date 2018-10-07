@@ -9,11 +9,15 @@ BGM、始点、終点決め打ち
 
 package com.example.yuken.musicplayer;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +35,8 @@ import java.util.Locale;
  * The type Main activity.
  */
 public class MainActivity extends AppCompatActivity implements Runnable {
+
+    private int REQUEST_PERMISSION = 1000;
 
     public enum LoopType {
         START,
@@ -81,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private int prevProgressStart = 0;
     private int prevProgressEnd = 0;
 
+    private TrackDialogFragment trackDialogFragment;
     private NumberPickerDialogFragment numberpickerDialogFragment;
 
     private boolean numberpickerUpdate = false;
@@ -88,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean loadCompletedBGM = false;
 
     private boolean operationTimeBar = false;
+
+    private boolean permissionGranted = false;
     ///
 
     /**
@@ -289,6 +298,48 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * permissionの確認
+     */
+    public void checkPermission() {
+       // Android 6, API 23以上でパーミッシンの確認
+        if(Build.VERSION.SDK_INT < 23){
+            permissionGranted = true;
+            return;
+        }
+
+        // 既に許可している
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED){
+            permissionGranted = true;
+        }
+        // 拒否していた場合
+        else{
+            permissionGranted = false;
+            requestLocationPermission();
+        }
+    }
+
+    /**
+     * permissionのアクセス許可を求める
+     */
+    private void requestLocationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSION);
+        }
+        else {
+            Toast toast = Toast.makeText(this, "許可してください", Toast.LENGTH_SHORT);
+            toast.show();
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,},
+                    REQUEST_PERMISSION);
+        }
+    }
+
+    /**
      *
      *
      * @param savedInstanceState
@@ -299,6 +350,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler = new Handler();
         m_handler.postDelayed(this, this.updateIntarval);
         setContentView(R.layout.activity_main);
+
+        // permissionの確認
+        checkPermission();
 
         UpdatePrevLoopPoint();
 
@@ -378,19 +432,28 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         //
 
         // BGMロードボタン
+        trackDialogFragment = new TrackDialogFragment();
         Button buttonLoad = findViewById(R.id.loadButton);
         buttonLoad.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
+                // TODO:曲リストから曲を選択した場合ロードするよう修正する
+/*
                 // BGMロードに成功したら初期化
                 loadCompletedBGM = LoadBGM();
                 if(!loadCompletedBGM){
                     return;
                 }
                 Initialize();
+*/
+                if(!permissionGranted){
+                    return;
+                }
+                trackDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
+        ///
 
         // 音楽開始ボタン
         Button buttonStart = findViewById(R.id.start);
@@ -456,6 +519,31 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
+    }
+
+    /**
+     * permissionのアクセス許可の結果受け取り
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode != REQUEST_PERMISSION) {
+            return;
+        }
+
+        // 使用が許可された
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            permissionGranted = true;
+        }
+        else {
+            permissionGranted = false;
+            // それでも拒否された時の対応
+            Toast toast = Toast.makeText(this, "何もできません", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     /**
