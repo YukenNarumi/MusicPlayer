@@ -366,7 +366,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         nowTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // TODO:操作中のシークバーから時間変更
             }
 
             @Override
@@ -376,7 +375,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                // TODO:操作を終えた時点で再生時間変更
                 operationTimeBar = false;
                 arrayMediaPlayer[playNumber].seekTo(CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength));
             }

@@ -15,6 +15,8 @@ public class TrackDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+/*
+        // TODO:トラック一覧表示用
         Dialog dialog = new Dialog(getActivity());
         dialog.setContentView(R.layout.dialog_track_list);
 
@@ -30,6 +32,14 @@ public class TrackDialogFragment extends DialogFragment {
                 // TODO:ダイアログ閉じる
             }
         });
+*/
+        // TODO:アルバム一覧表示用
+        Dialog dialog = new Dialog(getActivity());
+        dialog.setContentView(R.layout.dialog_track_list);
+        List<Album> albums = Album.getItems(getActivity());
+        ListView trackList = dialog.findViewById(R.id.listTrack);
+        ListAlbumAdapter adapter = new ListAlbumAdapter(getActivity(), albums);
+        trackList.setAdapter(adapter);
 
         return dialog;
     }
