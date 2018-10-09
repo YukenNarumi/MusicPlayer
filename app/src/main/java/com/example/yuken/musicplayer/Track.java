@@ -34,8 +34,7 @@ public class Track {
         MediaStore.Audio.Media.TRACK,
     };
 
-    public  Track(Cursor cursor)
-    {
+    public Track(Cursor cursor) {
         id          = cursor.getLong( cursor.getColumnIndex( MediaStore.Audio.Media._ID ));
         path        = cursor.getString( cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
         title       = cursor.getString( cursor.getColumnIndex( MediaStore.Audio.Media.TITLE ));
@@ -49,7 +48,6 @@ public class Track {
     }
 
     public static List getItems(Context activity) {
-
         List tracks = new ArrayList();
         ContentResolver resolver = activity.getContentResolver();
         Cursor cursor = resolver.query(
@@ -59,8 +57,10 @@ public class Track {
                 null,
                 null
         );
-        while( cursor.moveToNext() ){
-            if( cursor.getLong(cursor.getColumnIndex( MediaStore.Audio.Media.DURATION)) < 3000 ){continue;}
+        while(cursor.moveToNext()){
+            if(cursor.getLong(cursor.getColumnIndex( MediaStore.Audio.Media.DURATION)) < 3000 ){
+                continue;
+            }
             tracks.add(new Track(cursor));
         }
         cursor.close();
