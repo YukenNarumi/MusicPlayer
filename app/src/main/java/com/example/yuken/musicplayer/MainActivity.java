@@ -13,6 +13,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -186,11 +187,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
-     * 初期化処理
+     * 再生時間等のクリア
      */
-    private void Initialize(){
+    public void ClearMediaPlayerInfo(){
         if(!IsMediaPlayer()){
-            Toast.makeText(getApplication(), "Error: Call timing is incorrect [Initialize()]", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplication(), "Error: Call timing is incorrect [ClearMediaPlayerInfo()]", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -429,22 +430,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         //
 
-        // BGMロードボタン
+        // 曲選択ダイアログ表示ボタン
         trackDialogFragment = new TrackDialogFragment();
         Button buttonLoad = findViewById(R.id.loadButton);
         buttonLoad.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
-                // TODO:曲リストから曲を選択した場合ロードするよう修正する
-/*
-                // BGMロードに成功したら初期化
-                loadCompletedBGM = LoadBGM();
-                if(!loadCompletedBGM){
-                    return;
-                }
-                Initialize();
-*/
                 if(!permissionGranted){
                     return;
                 }
@@ -680,10 +672,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * BGMを実際にロードする
      *
+     * @param uri 音楽ファイルのパス
      * @return 成否
      */
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private boolean LoadBGM(){
+    public boolean LoadBGM(Uri uri) {
+        loadCompletedBGM = false;
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
             return false;
@@ -694,25 +689,21 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // インタンスを生成
         arrayMediaPlayer = new MediaPlayer[] { new MediaPlayer(), new MediaPlayer() };
 
-        //音楽ファイル名, あるいはパス
-        String filePath = "am_white.mp3";
-
-        // assetsから mp3 ファイルを読み込み
-        try(AssetFileDescriptor afdescripter = getAssets().openFd(filePath))
-        {
+        // URIから音楽ファイルを読み込む
+        try {
             Log.v("テスト", "[LoadBGM:try]");
             // 音量調整を端末のボタンに任せる
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-            // MediaPlayerに読み込んだ音楽ファイルを指定
+            // MediaPlayerに読み込む音楽ファイルを指定
             for(int i = 0; i < arrayMediaPlayer.length; i++){
                 arrayMediaPlayer[i].setLooping(true);
-                arrayMediaPlayer[i].setDataSource(afdescripter.getFileDescriptor(),
-                        afdescripter.getStartOffset(),
-                        afdescripter.getLength());
+                arrayMediaPlayer[i].setDataSource(getApplicationContext(), uri);
                 arrayMediaPlayer[i].prepare();
             }
-        } catch (IOException e1) {
+            loadCompletedBGM = true;
+        }
+        catch (IOException e1) {
             Log.v("テスト", "[LoadBGM:catch]");
             ReleaseMediaPlayer();
             e1.printStackTrace();
