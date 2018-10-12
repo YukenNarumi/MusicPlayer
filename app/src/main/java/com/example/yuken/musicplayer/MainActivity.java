@@ -1,12 +1,3 @@
-/*
-始点・終点を指定したBGMループ処理
-BGM、始点、終点決め打ち
-    完ぺきではないが終点についたら始点に戻ってBGM再生が行われることが確認できた
-
-    後はアプリ内でのBGM、始点、終点の設定を行えるようになればOK
- */
-
-
 package com.example.yuken.musicplayer;
 
 import android.Manifest;
@@ -82,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private int loopPointEnd    = 0; // ms
     private long preTime        = 0;
     private int musicLength     = 0;
-    private int playTime        = 0;
-    private int playNumber      = 0;
+    private int playTime        = 0;    // 現在の再生時刻
+    private int playNumber      = 0;    // 再生中のメディアプレイヤー番号
 
     private int prevProgressStart = 0;
     private int prevProgressEnd = 0;
@@ -302,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * permissionの確認
      */
     public void checkPermission() {
-       // Android 6, API 23以上でパーミッシンの確認
+        // Android 6, API 23以上でパーミッシンの確認
         if(Build.VERSION.SDK_INT < 23){
             permissionGranted = true;
             return;
@@ -377,7 +368,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 operationTimeBar = false;
-                arrayMediaPlayer[playNumber].seekTo(CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength));
+                // 現在時刻を更新
+                int _nowTime = CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength);
+                arrayMediaPlayer[playNumber].seekTo(_nowTime);
+                playTime = _nowTime;
             }
         });
 
@@ -452,8 +446,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            // 音楽再生
-            audioPlay();
+                // 音楽再生
+                audioPlay();
             }
         });
 
@@ -470,8 +464,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioStop();
             }
 */
-            // 音楽停止
-            audioStop();
+                // 音楽停止
+                audioStop();
             }
         });
 
@@ -634,44 +628,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * BGMを実際にロードする
      *
-     * @return true:成功 / false:失敗
-     */
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private boolean audioSetup(){
-        boolean fileCheck = false;
-
-        // インタンスを生成
-        arrayMediaPlayer = new MediaPlayer[] { new MediaPlayer(), new MediaPlayer() };
-
-        //音楽ファイル名, あるいはパス
-        String filePath = "am_white.mp3";
-
-        // assetsから mp3 ファイルを読み込み
-        try(AssetFileDescriptor afdescripter = getAssets().openFd(filePath))
-        {
-            // 音量調整を端末のボタンに任せる
-            setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-            // MediaPlayerに読み込んだ音楽ファイルを指定
-            for(MediaPlayer _media : arrayMediaPlayer){
-                _media.setLooping(true);
-                _media.setDataSource(afdescripter.getFileDescriptor(),
-                    afdescripter.getStartOffset(),
-                    afdescripter.getLength());
-                _media.prepare();
-            }
-
-            fileCheck = true;
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-
-        return fileCheck;
-    }
-
-    /**
-     * BGMを実際にロードする
-     *
      * @param uri 音楽ファイルのパス
      * @return 成否
      */
@@ -737,9 +693,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         this.preTime = System.currentTimeMillis();
-        this.musicLength = this.arrayMediaPlayer[this.playNumber].getDuration();
-            // [MediaPlayer.getDuration()] = 読み込んだファイルの全体時間を取得 のはず
-        this.playTime = 0;
 
         // 終了を検知するリスナー
 /*
@@ -773,25 +726,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
-        // TODO:そもそもBGM止めたとしても完全に開放する必要ない
         this.arrayMediaPlayer[this.playNumber].pause();
-
-        /*
-        this.preTime = 0;
-        this.musicLength = 0;
-        this.playTime = 0;
-        this.playNumber = 0;
-
-        // foreachからnullクリアする場合はコピーされた[_media]がクリアされるだけで
-        // 実際の配列内のメディアプレイヤーはnullクリアされてなかった
-        // 明示的に配列指定でのnullクリアでなければnullにならなかった
-        for(int i = 0; i < arrayMediaPlayer.length; i++){
-            if(arrayMediaPlayer[i] == null) { continue; }
-            arrayMediaPlayer[i].stop();      // 再生終了
-            arrayMediaPlayer[i].reset();     // リセット
-            arrayMediaPlayer[i].release();   // リソースの解放
-            arrayMediaPlayer[i] = null;
-        }
-        */
     }
 }
