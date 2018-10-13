@@ -47,16 +47,23 @@ public class Track {
         uri         = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
     }
 
-    public static List getItems(Context activity) {
-        List tracks = new ArrayList();
+    /**
+     * 検索条件にヒットした曲一覧取得
+     *
+     * @param activity  ダイアログを開いているactivity
+     * @param select    検索条件
+     * @return          ヒットしたアルバム一覧
+     */
+    public static List getItems(Context activity, String select) {
         ContentResolver resolver = activity.getContentResolver();
         Cursor cursor = resolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 Track.COLUMNS,
-                null,
+                select,
                 null,
                 null
         );
+        List tracks = new ArrayList();
         while(cursor.moveToNext()){
             if(cursor.getLong(cursor.getColumnIndex( MediaStore.Audio.Media.DURATION)) < 3000 ){
                 continue;

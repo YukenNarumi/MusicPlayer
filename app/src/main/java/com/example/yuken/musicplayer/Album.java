@@ -36,17 +36,24 @@ public class Album {
         tracks   = cursor.getInt(   cursor.getColumnIndex( MediaStore.Audio.Albums.NUMBER_OF_SONGS ));
     }
 
-    public static List getItems(Context activity) {
-        List albums = new ArrayList();
+    /**
+     * 検索条件にヒットしたアルバム一覧取得
+     *
+     * @param activity  ダイアログを開いているactivity
+     * @param select    検索条件
+     * @return          ヒットしたアルバム一覧
+     */
+    public static List getItems(Context activity, String select) {
         ContentResolver resolver = activity.getContentResolver();
         Cursor cursor = resolver.query(
             MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
             Album.FILLED_PROJECTION,
-            null,
+            select,
             null,
             "ALBUM  ASC"
         );
 
+        List albums = new ArrayList();
         while(cursor.moveToNext()){
             albums.add(new Album(cursor));
         }

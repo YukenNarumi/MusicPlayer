@@ -631,7 +631,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @param uri 音楽ファイルのパス
      * @return 成否
      */
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public boolean LoadBGM(Uri uri) {
         loadCompletedBGM = false;
 
