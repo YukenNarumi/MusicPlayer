@@ -17,10 +17,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.SeekBar;
-import android.content.res.AssetFileDescriptor;
 import android.widget.Toast;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private SeekBar loopPointStartSeekBar;
     private SeekBar loopPointEndSeekBar;
 
+    private List<Button> buttonList;
+
     //
     // ループポイント設定に必要最低限のBGM長(ms)
     private int MUSIC_LENGTH_MIN = 10000;
@@ -89,6 +93,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean operationTimeBar = false;
 
     private boolean permissionGranted = false;
+
+    private boolean loopChecking = false;
+    private boolean loopCheckingAfter = false;
+    private List<Boolean> prevSeekBarEnabled;
+    private List<Boolean> prevButtonEnabled;
     ///
 
     /**
@@ -128,12 +137,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
-     * シークバーの位置から時間に変換する
+     * シークバーの位置(メモリ)から時間に変換する
      *
-     * @param progressValue
-     * @param progressMax
-     * @param musicLength
-     * @return
+     * @param progressValue 現在のメモリの値
+     * @param progressMax   シークバーのメモリの最大値
+     * @param musicLength   曲の再生時間
+     * @return              現在の再生時間
      */
     private int CalculateProgressToTime(int progressValue, int progressMax, int musicLength){
         if(progressValue <= 0 || progressMax <= 0 || musicLength <= 0) {
@@ -153,12 +162,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
-     * 時間からシークバーの位置に変換する
+     * 時間からシークバーの位置(メモリ)に変換する
      *
-     * @param musicValue
-     * @param musicLength
-     * @param progressMax
-     * @return
+     * @param musicValue    現在の再生時間
+     * @param musicLength   曲の再生時間
+     * @param progressMax   シークバーのメモリの最大値
+     * @return              シークバーのメモリの値
      */
     private int CalculateTimeToProgress(int musicValue, int musicLength, int progressMax){
         if(musicValue <= 0 || progressMax <= 0 || musicLength <= 0) {
@@ -237,12 +246,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * 現在の時間更新
      */
-    private void UpdateNowTime(){
+    private void UpdateNowTime() {
         if(nowTimeText == null || nowTimeSeekBar == null){
             return;
         }
 
-        nowTimeSeekBar.setEnabled(loadCompletedBGM);
+        // ループ確認中の場合シークバー操作を禁止する
+        if(!IsLoopChecking()){
+            nowTimeSeekBar.setEnabled(loadCompletedBGM);
+        }
 
         int _max = nowTimeSeekBar.getMax();
         if(!IsMediaPlayer()) {
@@ -343,6 +355,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, this.updateIntarval);
         setContentView(R.layout.activity_main);
 
+        buttonList = new ArrayList<Button>();
+
         // permissionの確認
         checkPermission();
 
@@ -437,12 +451,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 trackDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
+        buttonList.add(buttonLoad);
         ///
 
         // 音楽開始ボタン
         Button buttonStart = findViewById(R.id.start);
-
-        // リスナーをボタンに登録
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -450,25 +463,33 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioPlay();
             }
         });
+        buttonList.add(buttonStart);
 
         // 音楽停止ボタン
         Button buttonStop = findViewById(R.id.stop);
-
-        // リスナーをボタンに登録
         buttonStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-/*
-            if (mediaPlayer != null) {
-                // 音楽停止
-                audioStop();
-            }
-*/
+                // ループ確認中の場合ループ確認を停止する
+                if(IsLoopChecking()){
+                    TerminateLoopChecking();
+                    return;
+                }
+
                 // 音楽停止
                 audioStop();
             }
         });
 
+        // ループテストボタン
+        Button buttonLoopChecking = findViewById(R.id.loopTest);
+        buttonLoopChecking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SetupLoopChecking();
+            }
+        });
+        buttonList.add(buttonLoopChecking);
 
         // DialogFragment表示をボタンに登録
         numberpickerDialogFragment = new NumberPickerDialogFragment();
@@ -487,6 +508,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
+        buttonList.add(buttonNumberPickerStart);
 
         // ループポイント[End]
         Button buttonNumberPickerEnd = findViewById(R.id.btnLoopPointEnd);
@@ -503,6 +525,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
+        buttonList.add(buttonNumberPickerEnd);
     }
 
     /**
@@ -555,6 +578,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         this.playTime += System.currentTimeMillis() - this.preTime;
 
+        UpdateLoopChecking();
+
         if((this.loopPointEnd - this.receptionEndPoint) <= this.playTime){
             this.playTime = this.loopPointStart;
             ///
@@ -565,6 +590,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             this.arrayMediaPlayer[_nextID].start();
             this.playNumber = _nextID;
             ///
+
+            if(IsLoopChecking()){
+                loopChecking        = false;
+                loopCheckingAfter   = true;
+            }
         }
         this.preTime = System.currentTimeMillis();
 
@@ -726,5 +756,95 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         this.arrayMediaPlayer[this.playNumber].pause();
+    }
+
+    /**
+     * ループ確認中
+     *
+     * @return true:実行中 / false:停止中
+     */
+    private boolean IsLoopChecking(){
+        return (loopChecking || loopCheckingAfter);
+    }
+
+    /**
+     * ループ確認用の初期化
+     */
+    private void SetupLoopChecking() {
+        if(!loadCompletedBGM){
+            return;
+        }
+
+        loopChecking        = true;
+        loopCheckingAfter   = false;
+
+        // シークバーの操作禁止
+        prevSeekBarEnabled = new ArrayList<Boolean>();
+        prevSeekBarEnabled.add(nowTimeSeekBar.isEnabled());
+        prevSeekBarEnabled.add(loopPointStartSeekBar.isEnabled());
+        prevSeekBarEnabled.add(loopPointEndSeekBar.isEnabled());
+
+        nowTimeSeekBar.setEnabled(false);
+        loopPointStartSeekBar.setEnabled(false);
+        loopPointEndSeekBar.setEnabled(false);
+
+        // ボタンの操作禁止
+        prevButtonEnabled = new ArrayList<Boolean>();
+        for(Button it : buttonList){
+            prevButtonEnabled.add(it.isEnabled());
+            it.setClickable(false);
+        }
+
+        int _testStart = this.loopPointEnd - LOOP_POINT_INTERVAL;
+        if(_testStart < 0){
+            _testStart = 0;
+        }
+        arrayMediaPlayer[this.playNumber].seekTo(_testStart);
+        playTime = _testStart;
+
+        audioPlay();
+    }
+
+    /**
+     * ループ確認中の操作制御等の更新
+     */
+    private void UpdateLoopChecking() {
+        if(!loopCheckingAfter){
+            return;
+        }
+
+        if(this.playTime < (this.loopPointStart + LOOP_POINT_INTERVAL)){
+            return;
+        }
+
+        TerminateLoopChecking();
+    }
+
+    /**
+     * ループ確認の終了処理
+     */
+    private void TerminateLoopChecking() {
+        this.arrayMediaPlayer[this.playNumber].pause();
+
+        // シークバーの操作禁止解除
+        nowTimeSeekBar.setEnabled(prevSeekBarEnabled.get(0));
+        loopPointStartSeekBar.setEnabled(prevSeekBarEnabled.get(1));
+        loopPointEndSeekBar.setEnabled(prevSeekBarEnabled.get(2));
+
+        while(prevSeekBarEnabled.remove((Integer)2)){}
+        prevSeekBarEnabled = null;
+
+        // ボタンの操作禁止解除
+        int _index = 0;
+        for(Boolean it : prevButtonEnabled){
+            buttonList.get(_index).setClickable(it);
+            _index++;
+        }
+
+        while(prevButtonEnabled.remove((Integer)2)){}
+        prevButtonEnabled = null;
+
+        loopChecking        = false;
+        loopCheckingAfter   = false;
     }
 }
