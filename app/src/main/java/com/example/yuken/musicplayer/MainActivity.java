@@ -22,8 +22,10 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * The type Main activity.
@@ -34,6 +36,23 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     public enum LoopType {
         START,
+        END
+    };
+
+    private enum SeekBarType {
+        NOW_TIME,
+        LOOP_POINT_START,
+        LOOP_POINT_END,
+        END
+    };
+
+    private enum ButtonType {
+        LOAD,
+        START,
+        STOP,
+        LOOP_CHECKING,
+        NUMBER_PICKER_START,
+        NUMBER_PICKER_END,
         END
     };
 
@@ -55,11 +74,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private TextView loopPointStartText;
     private TextView loopPointEndText;
 
-    private SeekBar nowTimeSeekBar;
-    private SeekBar loopPointStartSeekBar;
-    private SeekBar loopPointEndSeekBar;
+    private Map<SeekBarType, SeekBar> seekBarMap;
 
-    private List<Button> buttonList;
+    private Map<ButtonType, Button> buttonMap;
 
     //
     // ループポイント設定に必要最低限のBGM長(ms)
@@ -234,9 +251,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * シークバー位置をループポイントに対応させる
      */
     private void UpdateLoopPointSeekbar(){
-        if(loopPointStartSeekBar == null || loopPointEndSeekBar == null){
+        if(seekBarMap.get(SeekBarType.LOOP_POINT_START) == null || seekBarMap.get(SeekBarType.LOOP_POINT_END) == null){
             return;
         }
+
+        SeekBar loopPointStartSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_START);
+        SeekBar loopPointEndSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_END);
 
         int _max = loopPointStartSeekBar.getMax();
         loopPointStartSeekBar.setProgress(CalculateTimeToProgress(loopPointStart, musicLength, _max));
@@ -247,11 +267,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * 現在の時間更新
      */
     private void UpdateNowTime() {
-        if(nowTimeText == null || nowTimeSeekBar == null){
+        if(nowTimeText == null || seekBarMap.get(SeekBarType.NOW_TIME) == null){
             return;
         }
 
         // ループ確認中の場合シークバー操作を禁止する
+        SeekBar nowTimeSeekBar = seekBarMap.get(SeekBarType.NOW_TIME);
         if(!IsLoopChecking()){
             nowTimeSeekBar.setEnabled(loadCompletedBGM);
         }
@@ -355,7 +376,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, this.updateIntarval);
         setContentView(R.layout.activity_main);
 
-        buttonList = new ArrayList<Button>();
+        seekBarMap = new HashMap<SeekBarType, SeekBar>();
+        buttonMap = new HashMap<ButtonType, Button>();
 
         // permissionの確認
         checkPermission();
@@ -368,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointEndText = findViewById(R.id.loopPointEnd);
         UpdateLoopPointText();
 
-        nowTimeSeekBar = findViewById(R.id.seekBarNowTime);
+        SeekBar nowTimeSeekBar = findViewById(R.id.seekBarNowTime);
         nowTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -383,14 +405,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 operationTimeBar = false;
                 // 現在時刻を更新
+                SeekBar nowTimeSeekBar = seekBarMap.get(SeekBarType.NOW_TIME);
                 int _nowTime = CalculateProgressToTime(nowTimeSeekBar.getProgress(), nowTimeSeekBar.getMax(), musicLength);
                 arrayMediaPlayer[playNumber].seekTo(_nowTime);
                 playTime = _nowTime;
             }
         });
+        seekBarMap.put(SeekBarType.NOW_TIME, nowTimeSeekBar);
 
         // ループポイントの時間
-        loopPointStartSeekBar = findViewById(R.id.seekBarStart);
+        SeekBar loopPointStartSeekBar = findViewById(R.id.seekBarStart);
         loopPointStartSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -412,8 +436,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 UpdateSeekbar(LoopType.START);
             }
         });
+        seekBarMap.put(SeekBarType.LOOP_POINT_START, loopPointStartSeekBar);
 
-        loopPointEndSeekBar = findViewById(R.id.seekBarEnd);
+        SeekBar loopPointEndSeekBar = findViewById(R.id.seekBarEnd);
         loopPointEndSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -435,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 UpdateSeekbar(LoopType.END);
             }
         });
-
+        seekBarMap.put(SeekBarType.LOOP_POINT_END, loopPointEndSeekBar);
         //
 
         // 曲選択ダイアログ表示ボタン
@@ -451,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 trackDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
-        buttonList.add(buttonLoad);
+        buttonMap.put(ButtonType.LOAD, buttonLoad);
         ///
 
         // 音楽開始ボタン
@@ -463,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioPlay();
             }
         });
-        buttonList.add(buttonStart);
+        buttonMap.put(ButtonType.START, buttonStart);
 
         // 音楽停止ボタン
         Button buttonStop = findViewById(R.id.stop);
@@ -480,6 +505,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioStop();
             }
         });
+        buttonMap.put(ButtonType.STOP, buttonStop);
 
         // ループテストボタン
         Button buttonLoopChecking = findViewById(R.id.loopTest);
@@ -489,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 SetupLoopChecking();
             }
         });
-        buttonList.add(buttonLoopChecking);
+        buttonMap.put(ButtonType.LOOP_CHECKING, buttonLoopChecking);
 
         // DialogFragment表示をボタンに登録
         numberpickerDialogFragment = new NumberPickerDialogFragment();
@@ -508,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
-        buttonList.add(buttonNumberPickerStart);
+        buttonMap.put(ButtonType.NUMBER_PICKER_START, buttonNumberPickerStart);
 
         // ループポイント[End]
         Button buttonNumberPickerEnd = findViewById(R.id.btnLoopPointEnd);
@@ -525,7 +551,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 numberpickerDialogFragment.show(getSupportFragmentManager(), NumberPickerDialogFragment.class.getSimpleName());
             }
         });
-        buttonList.add(buttonNumberPickerEnd);
+        buttonMap.put(ButtonType.NUMBER_PICKER_END, buttonNumberPickerEnd);
     }
 
     /**
@@ -628,6 +654,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private void UpdateSeekbar(LoopType loopType){
         if(musicLength <= MUSIC_LENGTH_MIN){ return; }
+
+        SeekBar loopPointStartSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_START);
+        SeekBar loopPointEndSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_END);
 
         int _max        = loopPointStartSeekBar.getMax();
         int _nowStart   = loopPointStartSeekBar.getProgress();
@@ -780,19 +809,21 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // シークバーの操作禁止
         prevSeekBarEnabled = new ArrayList<Boolean>();
-        prevSeekBarEnabled.add(nowTimeSeekBar.isEnabled());
-        prevSeekBarEnabled.add(loopPointStartSeekBar.isEnabled());
-        prevSeekBarEnabled.add(loopPointEndSeekBar.isEnabled());
-
-        nowTimeSeekBar.setEnabled(false);
-        loopPointStartSeekBar.setEnabled(false);
-        loopPointEndSeekBar.setEnabled(false);
+        for(SeekBarType key : seekBarMap.keySet()){
+            SeekBar _seekBar = seekBarMap.get(key);
+            prevSeekBarEnabled.add(_seekBar.isEnabled());
+            _seekBar.setEnabled(false);
+        }
 
         // ボタンの操作禁止
         prevButtonEnabled = new ArrayList<Boolean>();
-        for(Button it : buttonList){
-            prevButtonEnabled.add(it.isEnabled());
-            it.setClickable(false);
+        for(ButtonType key : buttonMap.keySet()){
+            Button btn = buttonMap.get(key);
+            prevButtonEnabled.add(btn.isEnabled());
+            if(key == ButtonType.STOP){
+                continue;
+            }
+            btn.setClickable(false);
         }
 
         int _testStart = this.loopPointEnd - LOOP_POINT_INTERVAL;
@@ -827,20 +858,21 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         this.arrayMediaPlayer[this.playNumber].pause();
 
         // シークバーの操作禁止解除
-        nowTimeSeekBar.setEnabled(prevSeekBarEnabled.get(0));
-        loopPointStartSeekBar.setEnabled(prevSeekBarEnabled.get(1));
-        loopPointEndSeekBar.setEnabled(prevSeekBarEnabled.get(2));
-
+        int _index = 0;
+        for(SeekBarType key : seekBarMap.keySet()){
+            SeekBar _seekBar = seekBarMap.get(key);
+            _seekBar.setEnabled(prevSeekBarEnabled.get(_index));
+        }
         while(prevSeekBarEnabled.remove((Integer)2)){}
         prevSeekBarEnabled = null;
 
         // ボタンの操作禁止解除
-        int _index = 0;
-        for(Boolean it : prevButtonEnabled){
-            buttonList.get(_index).setClickable(it);
+        _index = 0;
+        for(ButtonType key : buttonMap.keySet()){
+            Button btn = buttonMap.get(key);
+            btn.setClickable(prevButtonEnabled.get(_index));
             _index++;
         }
-
         while(prevButtonEnabled.remove((Integer)2)){}
         prevButtonEnabled = null;
 
