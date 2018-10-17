@@ -769,6 +769,35 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioStop();
             }
         });
+
+        SetupAudioPlay();
+    }
+
+    /**
+     * 通常のBGM再生
+     * ボタン、シークバーの操作制限を行う
+     */
+    private void SetupAudioPlay() {
+        if(IsLoopChecking()){
+            return;
+        }
+
+        for(SeekBarType key : seekBarMap.keySet()){
+            if(key == SeekBarType.NOW_TIME){
+                continue;
+            }
+            SeekBar _seekBar = seekBarMap.get(key);
+            _seekBar.setEnabled(false);
+        }
+
+        // ボタンの操作禁止
+        for(ButtonType key : buttonMap.keySet()){
+            if(key == ButtonType.STOP){
+                continue;
+            }
+            Button btn = buttonMap.get(key);
+            btn.setClickable(false);
+        }
     }
 
     /**
@@ -785,6 +814,29 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         this.arrayMediaPlayer[this.playNumber].pause();
+
+        TeardownAudioPlay();
+    }
+
+    /**
+     * 通常再生時のBGM停止
+     * タン、シークバーの操作制限を行う
+     */
+    private void TeardownAudioPlay() {
+        if(IsLoopChecking()){
+            return;
+        }
+
+        for(SeekBarType key : seekBarMap.keySet()){
+            SeekBar _seekBar = seekBarMap.get(key);
+            _seekBar.setEnabled(true);
+        }
+
+        // ボタンの操作禁止
+        for(ButtonType key : buttonMap.keySet()){
+            Button btn = buttonMap.get(key);
+            btn.setClickable(true);
+        }
     }
 
     /**
