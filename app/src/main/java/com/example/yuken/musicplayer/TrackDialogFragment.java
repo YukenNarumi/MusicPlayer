@@ -233,6 +233,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
         MainActivity mainActivity = (MainActivity)getActivity();
         if(mainActivity.LoadBGM(item.uri)){
             mainActivity.ClearMediaPlayerInfo();
+            mainActivity.LoadLoopPointDate(item.title);
         }
     }
 }

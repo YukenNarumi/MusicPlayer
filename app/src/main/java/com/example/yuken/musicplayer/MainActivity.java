@@ -1,6 +1,7 @@
 package com.example.yuken.musicplayer;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -32,6 +33,7 @@ import java.util.Map;
  */
 public class MainActivity extends AppCompatActivity implements Runnable {
 
+    private final String PREFERENCES_TITLE = "LoopSettingBGM";
     private int REQUEST_PERMISSION = 1000;
 
     public enum LoopType {
@@ -115,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean loopCheckingAfter = false;
     private List<Boolean> prevSeekBarEnabled;
     private List<Boolean> prevButtonEnabled;
+
+    private String BGMTitle;
     ///
 
     /**
@@ -752,6 +756,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         this.preTime = System.currentTimeMillis();
 
+        SaveLoopPointDate(BGMTitle);
+
         // 終了を検知するリスナー
 /*
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -930,5 +936,50 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         loopChecking        = false;
         loopCheckingAfter   = false;
+    }
+
+    /**
+     * @param title
+     */
+    private void SaveLoopPointDate(String title) {
+        SharedPreferences pref = getSharedPreferences(PREFERENCES_TITLE, MODE_PRIVATE);
+        SharedPreferences.Editor e = pref.edit();
+        e.putInt(title + "_Start", loopPointStart);
+        e.putInt(title + "_End", loopPointEnd);
+        e.commit();
+    }
+
+    /**
+     * ループポイントが保存されていれば読み込む
+     *
+     * @param title
+     */
+    public void LoadLoopPointDate(String title) {
+        Log.v("テスト", "[LoadLoopPointDate:" + title + "]");
+
+        BGMTitle = title;
+
+        Boolean _load = false;
+        SharedPreferences pref = getSharedPreferences(PREFERENCES_TITLE, MODE_PRIVATE);
+
+        int _loopPointStart = pref.getInt(title + "_Start", 0);
+        if(0 <= _loopPointStart){
+            loopPointStart = _loopPointStart;
+            _load = true;
+        }
+
+        int _loopPointEnd = pref.getInt(title + "_End", musicLength);
+        if(0 <= _loopPointEnd){
+            loopPointEnd = _loopPointEnd;
+            _load = true;
+        }
+
+        // ループポイントが保存されていなければ終了
+        if(!_load){
+            return;
+        }
+        UpdatePrevLoopPoint();
+        UpdateLoopPointText();
+        UpdateLoopPointSeekbar();
     }
 }
