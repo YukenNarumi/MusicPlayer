@@ -33,8 +33,12 @@ import java.util.Map;
  */
 public class MainActivity extends AppCompatActivity implements Runnable {
 
-    private final String PREFERENCES_TITLE = "LoopSettingBGM";
-    private int REQUEST_PERMISSION = 1000;
+    private static final String PREFERENCES_TITLE = "LoopSettingBGM";
+    // リクエストコード:
+    private static final int REQUEST_PERMISSION = 1000;
+
+    // ボタン連打対策:ボタンタップ後にタップできない間隔(ms)
+    private static final int CLICK_EVENT_INTERVAL = 500;
 
     public enum LoopType {
         START,
@@ -82,15 +86,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     //
     // ループポイント設定に必要最低限のBGM長(ms)
-    private int MUSIC_LENGTH_MIN = 10000;
+    private static final int MUSIC_LENGTH_MIN = 10000;
 
     // ループポイントの始点・終点設定に必要な間隔(ms)
-    private int LOOP_POINT_INTERVAL = 5000;
+    private static final int LOOP_POINT_INTERVAL = 5000;
 
     // 更新処理の間隔(ms)
-    private int updateIntarval = 5;
+    private static final int updateIntarval = 5;
     // ループポイント(終点)の受付猶予(ms)
-    private int receptionEndPoint = 30;
+    private static final int receptionEndPoint = 30;
 
     private int loopPointStart  = 0; // ms
     private int loopPointEnd    = 0; // ms
@@ -101,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private int prevProgressStart = 0;
     private int prevProgressEnd = 0;
+    private static long clickTime = 0;
 
     private TrackDialogFragment trackDialogFragment;
     private NumberPickerDialogFragment numberpickerDialogFragment;
@@ -369,6 +374,20 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * ボタン連打対策
+     *
+     * @return 成否
+     */
+    public static boolean IsClickEvent() {
+        long time = System.currentTimeMillis();
+        if(time - clickTime < CLICK_EVENT_INTERVAL){
+            return false;
+        }
+        clickTime = time;
+        return true;
+    }
+
+    /**
      *
      *
      * @param savedInstanceState
@@ -474,6 +493,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 if(!permissionGranted){
                     return;
                 }
@@ -488,6 +510,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 // 音楽再生
                 audioPlay();
             }
@@ -499,6 +524,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 // ループ確認中の場合ループ確認を停止する
                 if(IsLoopChecking()){
                     TerminateLoopChecking();
@@ -516,6 +544,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonLoopChecking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 SetupLoopChecking();
             }
         });
@@ -527,6 +558,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 // ダイアログに値を渡す
                 Bundle bundle = new Bundle();
                 bundle.putInt("LoopType", LoopType.START.ordinal());
@@ -545,6 +579,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(!MainActivity.IsClickEvent()){
+                    return;
+                }
                 Bundle bundle = new Bundle();
                 bundle.putInt("LoopType", LoopType.END.ordinal());
                 bundle.putInt("LoopPointStart", loopPointStart);
