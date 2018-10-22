@@ -12,23 +12,24 @@ import java.util.List;
 public class ListRootAdapter extends ArrayAdapter<Root> {
     LayoutInflater mInflater;
 
-    public ListRootAdapter(Context context, List item){
+    public ListRootAdapter(Context context, List item) {
         super(context, 0, item);
-        mInflater =  (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Root item = getItem(position);
+        Root                       item = getItem(position);
         ListRootAdapter.ViewHolder holder;
 
-        if(convertView==null){
+        if (convertView == null) {
             convertView = mInflater.inflate(R.layout.item_root, null);
             holder = new ListRootAdapter.ViewHolder();
-            holder.titleTextView    = (TextView)convertView.findViewById(R.id.title);
+            holder.titleTextView = (TextView)convertView.findViewById(R.id.title);
             convertView.setTag(holder);
-        }else{
-            holder = (ListRootAdapter.ViewHolder) convertView.getTag();
+        }
+        else {
+            holder = (ListRootAdapter.ViewHolder)convertView.getTag();
         }
 
         holder.titleTextView.setText(item.title);
@@ -37,6 +38,6 @@ public class ListRootAdapter extends ArrayAdapter<Root> {
     }
 
     static class ViewHolder {
-        TextView  titleTextView;
+        TextView titleTextView;
     }
 }

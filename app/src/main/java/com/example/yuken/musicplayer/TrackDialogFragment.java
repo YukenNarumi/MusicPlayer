@@ -24,19 +24,19 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
     }
 
     private ArrayList<DialogSceneType> prevSceneType;
-    private DialogSceneType sceneType;
-    private Button backButton;
-    private ListView infoList;
-    private String selectWordArtist;
-    private String selectWordAlbum;
+    private DialogSceneType            sceneType;
+    private Button                     backButton;
+    private ListView                   infoList;
+    private String                     selectWordArtist;
+    private String                     selectWordAlbum;
 
     /**
      * アーティストが関係しているアルバム、
      * アルバム内の曲検索で使用する検索条件のクリア
      */
     private void ClearSelectWord() {
-        selectWordArtist    = null;
-        selectWordAlbum     = null;
+        selectWordArtist = null;
+        selectWordAlbum = null;
     }
 
     /**
@@ -44,8 +44,8 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      */
     private void UpdateBackPrev() {
         int _size = prevSceneType.size();
-        if(_size <= 0){
-            Log.d("debug","要素が無い");
+        if (_size <= 0) {
+            Log.d("debug", "要素が無い");
             return;
         }
 
@@ -63,19 +63,21 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * @param type 遷移先
      */
     private void UpdateScene(DialogSceneType type) {
-        backButton.setVisibility(type == DialogSceneType.HOME ? View.INVISIBLE : View.VISIBLE);
+        backButton.setVisibility(type == DialogSceneType.HOME
+                                 ? View.INVISIBLE
+                                 : View.VISIBLE);
 
         infoList.setAdapter(null);
-        if(type == DialogSceneType.HOME){
+        if (type == DialogSceneType.HOME) {
             UpdateSceneHome();
         }
-        else if(type == DialogSceneType.ARTIST){
+        else if (type == DialogSceneType.ARTIST) {
             UpdateSceneArtist();
         }
-        else if(type == DialogSceneType.ALBUM){
+        else if (type == DialogSceneType.ALBUM) {
             UpdateSceneAlbum();
         }
-        else if(type == DialogSceneType.TRACK){
+        else if (type == DialogSceneType.TRACK) {
             UpdateSceneTracks();
         }
 
@@ -89,7 +91,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
     private void UpdateSceneHome() {
         ClearSelectWord();
 
-        List<Root> root = Root.getItems(getActivity());
+        List<Root>      root    = Root.getItems(getActivity());
         ListRootAdapter adapter = new ListRootAdapter(getActivity(), root);
         infoList.setAdapter(adapter);
     }
@@ -98,7 +100,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アーティスト一覧表示
      */
     private void UpdateSceneArtist() {
-        List<Artist> artist = Artist.getItems(getActivity());
+        List<Artist>      artist  = Artist.getItems(getActivity());
         ListArtistAdapter adapter = new ListArtistAdapter(getActivity(), artist);
         infoList.setAdapter(adapter);
     }
@@ -107,7 +109,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アルバム一覧表示
      */
     private void UpdateSceneAlbum() {
-        List<Album> albums = Album.getItems(getActivity(), selectWordArtist);
+        List<Album>      albums  = Album.getItems(getActivity(), selectWordArtist);
         ListAlbumAdapter adapter = new ListAlbumAdapter(getActivity(), albums);
         infoList.setAdapter(adapter);
     }
@@ -116,7 +118,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * トラック一覧表示
      */
     private void UpdateSceneTracks() {
-        List<Track> tracks = Track.getItems(getActivity(), selectWordAlbum);
+        List<Track>      tracks  = Track.getItems(getActivity(), selectWordAlbum);
         ListTrackAdapter adapter = new ListTrackAdapter(getActivity(), tracks);
         infoList.setAdapter(adapter);
     }
@@ -142,7 +144,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
         });
 
         infoList = dialog.findViewById(R.id.listTrack);
-        infoList.setOnItemClickListener((AdapterView.OnItemClickListener) this);
+        infoList.setOnItemClickListener((AdapterView.OnItemClickListener)this);
 
         UpdateScene(DialogSceneType.HOME);
 
@@ -152,23 +154,23 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
     /**
      * リスト項目タップ時の挙動
      *
-     * @param parent        イベントが起きたListView
-     * @param v             選択されたリスト項目
-     * @param position      選択されたリスト項目の位置(0～)
-     * @param id            選択されたリスト項目のIDを示す値(0～)
+     * @param parent   イベントが起きたListView
+     * @param v        選択されたリスト項目
+     * @param position 選択されたリスト項目の位置(0～)
+     * @param id       選択されたリスト項目のIDを示す値(0～)
      */
     @Override
     public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-        if(sceneType == DialogSceneType.HOME){
+        if (sceneType == DialogSceneType.HOME) {
             UpdateOnItemClickRoot(position);
         }
-        else if(sceneType == DialogSceneType.ARTIST){
+        else if (sceneType == DialogSceneType.ARTIST) {
             UpdateOnItemClickArtist(parent, position);
         }
-        else if(sceneType == DialogSceneType.ALBUM){
+        else if (sceneType == DialogSceneType.ALBUM) {
             UpdateOnItemClickAlbum(parent, position);
         }
-        else if(sceneType == DialogSceneType.TRACK){
+        else if (sceneType == DialogSceneType.TRACK) {
             UpdateOnItemClickTrack(parent, position);
         }
     }
@@ -180,13 +182,13 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      */
     private void UpdateOnItemClickRoot(int position) {
         DialogSceneType _type = DialogSceneType.HOME;
-        if(position == Root.RootMenu.ARTIST.ordinal()) {
+        if (position == Root.RootMenu.ARTIST.ordinal()) {
             _type = DialogSceneType.ARTIST;
         }
-        else if(position == Root.RootMenu.ALBUM.ordinal()) {
+        else if (position == Root.RootMenu.ALBUM.ordinal()) {
             _type = DialogSceneType.ALBUM;
         }
-        else if(position == Root.RootMenu.TRACK.ordinal()) {
+        else if (position == Root.RootMenu.TRACK.ordinal()) {
             _type = DialogSceneType.TRACK;
         }
         UpdateScene(_type);
@@ -196,12 +198,12 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アーティストリスト表示中のリスト項目タップ時の更新処理
      * アーティスト名からアルバム検索を行う
      *
-     * @param parent    イベントが起きたListView
-     * @param position  選択されたリスト項目の位置(0～)
+     * @param parent   イベントが起きたListView
+     * @param position 選択されたリスト項目の位置(0～)
      */
     private void UpdateOnItemClickArtist(AdapterView<?> parent, int position) {
         ListView listView = (ListView)parent;
-        Artist item = (Artist)listView.getItemAtPosition(position);
+        Artist   item     = (Artist)listView.getItemAtPosition(position);
         selectWordArtist = "artist='" + item.artist + "'";
         UpdateScene(DialogSceneType.ALBUM);
     }
@@ -210,12 +212,12 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アルバムリスト表示中のリスト項目タップ時の更新処理
      * アルバム名から曲検索を行う
      *
-     * @param parent    イベントが起きたListView
-     * @param position  選択されたリスト項目の位置(0～)
+     * @param parent   イベントが起きたListView
+     * @param position 選択されたリスト項目の位置(0～)
      */
     private void UpdateOnItemClickAlbum(AdapterView<?> parent, int position) {
         ListView listView = (ListView)parent;
-        Album item = (Album)listView.getItemAtPosition(position);
+        Album    item     = (Album)listView.getItemAtPosition(position);
         selectWordAlbum = "album='" + item.album + "'";
         UpdateScene(DialogSceneType.TRACK);
     }
@@ -224,14 +226,14 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * 曲リスト表示中のリスト項目タップ時の更新処理
      * 曲の読み込みを行う
      *
-     * @param parent    イベントが起きたListView
-     * @param position  選択されたリスト項目の位置(0～)
+     * @param parent   イベントが起きたListView
+     * @param position 選択されたリスト項目の位置(0～)
      */
     private void UpdateOnItemClickTrack(AdapterView<?> parent, int position) {
-        ListView listView = (ListView) parent;
-        Track item = (Track)listView.getItemAtPosition(position);
+        ListView     listView     = (ListView)parent;
+        Track        item         = (Track)listView.getItemAtPosition(position);
         MainActivity mainActivity = (MainActivity)getActivity();
-        if(mainActivity.LoadBGM(item.uri)){
+        if (mainActivity.LoadBGM(item.uri)) {
             mainActivity.ClearMediaPlayerInfo();
             mainActivity.LoadLoopPointDate(item.title);
         }

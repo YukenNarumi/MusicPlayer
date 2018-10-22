@@ -15,24 +15,24 @@ public class ListArtistAdapter extends ArrayAdapter<Artist> {
 
     public ListArtistAdapter(Context context, List item) {
         super(context, 0, item);
-        mInflater =  (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Artist item = getItem(position);
+        Artist                       item = getItem(position);
         ListArtistAdapter.ViewHolder holder;
 
-        if(convertView==null){
+        if (convertView == null) {
             convertView = mInflater.inflate(R.layout.item_artist, null);
             holder = new ListArtistAdapter.ViewHolder();
-            holder.artistTextView   = (TextView)convertView.findViewById(R.id.artist);
-            holder.albumsTextView   = (TextView)convertView.findViewById(R.id.album);
-            holder.tracksTextView   = (TextView)convertView.findViewById(R.id.tracks);
+            holder.artistTextView = (TextView)convertView.findViewById(R.id.artist);
+            holder.albumsTextView = (TextView)convertView.findViewById(R.id.album);
+            holder.tracksTextView = (TextView)convertView.findViewById(R.id.tracks);
             convertView.setTag(holder);
         }
-        else{
-            holder = (ListArtistAdapter.ViewHolder) convertView.getTag();
+        else {
+            holder = (ListArtistAdapter.ViewHolder)convertView.getTag();
         }
 
         holder.artistTextView.setText(item.artist);
@@ -42,9 +42,9 @@ public class ListArtistAdapter extends ArrayAdapter<Artist> {
         return convertView;
     }
 
-    static class ViewHolder{
-        TextView  artistTextView;
-        TextView  albumsTextView;
-        TextView  tracksTextView;
+    static class ViewHolder {
+        TextView artistTextView;
+        TextView albumsTextView;
+        TextView tracksTextView;
     }
 }

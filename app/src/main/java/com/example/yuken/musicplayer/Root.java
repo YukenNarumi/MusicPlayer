@@ -15,14 +15,14 @@ public class Root {
         ALBUM,
         TRACK,
         END
-    };
+    }
 
     public RootMenu menu;
     public String   title;
 
     public Root(RootMenu root, String name) {
-        menu    = root;
-        title   = name;
+        menu = root;
+        title = name;
     }
 
     public static List getItems(Context activity) {

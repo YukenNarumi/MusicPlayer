@@ -13,42 +13,43 @@ public class ListTrackAdapter extends ArrayAdapter<Track> {
 
     LayoutInflater mInflater;
 
-    public ListTrackAdapter(Context context, List item){
+    public ListTrackAdapter(Context context, List item) {
         super(context, 0, item);
-        mInflater =  (LayoutInflater) context.getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent){
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-        Track item = getItem(position);
+        Track      item = getItem(position);
         ViewHolder holder;
 
-        if(convertView==null){
+        if (convertView == null) {
             convertView = mInflater.inflate(R.layout.item_track, null);
             holder = new ViewHolder();
-            holder.trackTextView    = (TextView)convertView.findViewById(R.id.textBGMTitle);
-            holder.artistTextView   = (TextView)convertView.findViewById(R.id.textArtist);
+            holder.trackTextView = (TextView)convertView.findViewById(R.id.textBGMTitle);
+            holder.artistTextView = (TextView)convertView.findViewById(R.id.textArtist);
             holder.durationTextView = (TextView)convertView.findViewById(R.id.textDuration);
             convertView.setTag(holder);
-        }else{
-            holder = (ViewHolder) convertView.getTag();
+        }
+        else {
+            holder = (ViewHolder)convertView.getTag();
         }
 
-        long dm = item.duration/60000;
-        long ds = (item.duration-(dm*60000))/1000;
+        long dm = item.duration / 60000;
+        long ds = (item.duration - (dm * 60000)) / 1000;
 
         holder.artistTextView.setText(item.artist);
         holder.trackTextView.setText(item.title);
-        holder.durationTextView.setText(String.format("%d:%02d",dm,ds));
+        holder.durationTextView.setText(String.format("%d:%02d", dm, ds));
 
         return convertView;
     }
 
-    static class ViewHolder{
-        TextView  trackTextView;
-        TextView  artistTextView;
-        TextView  durationTextView;
+    static class ViewHolder {
+        TextView trackTextView;
+        TextView artistTextView;
+        TextView durationTextView;
     }
 
 }
