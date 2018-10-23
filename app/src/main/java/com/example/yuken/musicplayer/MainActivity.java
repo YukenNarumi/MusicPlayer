@@ -504,6 +504,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
+                if(trackDialogFragment.isResumed()){
+                    return;
+                }
                 if (!MainActivity.IsClickEvent()) {
                     return;
                 }
@@ -571,6 +574,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(numberpickerDialogFragment.isResumed()){
+                    return;
+                }
                 if (!MainActivity.IsClickEvent()) {
                     return;
                 }
@@ -594,6 +600,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(numberpickerDialogFragment.isResumed()){
+                    return;
+                }
                 if (!MainActivity.IsClickEvent()) {
                     return;
                 }
