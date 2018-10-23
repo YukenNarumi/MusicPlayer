@@ -122,19 +122,19 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * メディアプレイヤーが設定済みか
      *
-     * @return true:設定済み / false:未設定がある
+     * @return true:未設定がある / false:設定済み
      */
-    private boolean IsMediaPlayer() {
+    private boolean IsNotMediaPlayer() {
         if (arrayMediaPlayer == null) {
-            return false;
+            return true;
         }
         for (MediaPlayer _media : arrayMediaPlayer) {
             if (_media != null) {
                 continue;
             }
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @return true:再生中 / false:未再生
      */
     private boolean IsPlayingMediaPlayer() {
-        if (!IsMediaPlayer()) {
+        if (IsNotMediaPlayer()) {
             return false;
         }
 
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * 再生時間等のクリア
      */
     public void ClearMediaPlayerInfo() {
-        if (!IsMediaPlayer()) {
+        if (IsNotMediaPlayer()) {
             Toast.makeText(getApplication(),
                            "Error: Call timing is incorrect [ClearMediaPlayerInfo()]",
                            Toast.LENGTH_SHORT
@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         int _max = nowTimeSeekBar.getMax();
-        if (!IsMediaPlayer()) {
+        if (IsNotMediaPlayer()) {
             String _text = dataFormat.format(0) + "/" + dataFormat.format(musicLength);
             nowTimeText.setText(_text);
             nowTimeSeekBar.setProgress(CalculateTimeToProgress(0, musicLength, _max));
@@ -386,25 +386,22 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * ボタン連打対策
      *
-     * @return 成否
+     * @return true:タップ制限中 / false:タップ可能
      */
-    public static boolean IsClickEvent() {
+    public static boolean IsNotClickEvent() {
         long time = System.currentTimeMillis();
         if (time - clickTime < CLICK_EVENT_INTERVAL) {
-            return false;
+            return true;
         }
         clickTime = time;
-        return true;
+        return false;
     }
 
-    /**
-     * @param savedInstanceState
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         m_handler = new Handler();
-        m_handler.postDelayed(this, this.updateIntarval);
+        m_handler.postDelayed(this, updateIntarval);
         setContentView(R.layout.activity_main);
 
         seekBarMap = new HashMap<SeekBarType, SeekBar>();
@@ -504,10 +501,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
-                if(trackDialogFragment.isResumed()){
+                if (trackDialogFragment.isResumed()) {
                     return;
                 }
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 if (!permissionGranted) {
@@ -526,7 +523,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 // 音楽再生
@@ -540,7 +537,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 // ループ確認中の場合ループ確認を停止する
@@ -560,7 +557,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonLoopChecking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 SetupLoopChecking();
@@ -574,10 +571,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(numberpickerDialogFragment.isResumed()){
+                if (numberpickerDialogFragment.isResumed()) {
                     return;
                 }
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 // ダイアログに値を渡す
@@ -600,10 +597,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(numberpickerDialogFragment.isResumed()){
+                if (numberpickerDialogFragment.isResumed()) {
                     return;
                 }
-                if (!MainActivity.IsClickEvent()) {
+                if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
                 Bundle bundle = new Bundle();
@@ -665,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         UpdateNowTime();
 
         if (!IsPlayingMediaPlayer()) {
-            m_handler.postDelayed(this, this.updateIntarval);
+            m_handler.postDelayed(this, updateIntarval);
             return;
         }
 
@@ -675,7 +672,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         UpdateLoopChecking();
 
-        if ((this.loopPointEnd - this.receptionEndPoint) <= this.playTime) {
+        if ((this.loopPointEnd - receptionEndPoint) <= this.playTime) {
             this.playTime = this.loopPointStart;
             ///
             this.arrayMediaPlayer[this.playNumber].seekTo(this.loopPointStart);
@@ -693,7 +690,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
         this.preTime = System.currentTimeMillis();
 
-        m_handler.postDelayed(this, this.updateIntarval);
+        m_handler.postDelayed(this, updateIntarval);
     }
 
     /**
@@ -794,10 +791,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
             // MediaPlayerに読み込む音楽ファイルを指定
-            for (int i = 0; i < arrayMediaPlayer.length; i++) {
-                arrayMediaPlayer[i].setLooping(true);
-                arrayMediaPlayer[i].setDataSource(getApplicationContext(), uri);
-                arrayMediaPlayer[i].prepare();
+            for (MediaPlayer anArrayMediaPlayer : arrayMediaPlayer) {
+                anArrayMediaPlayer.setLooping(true);
+                anArrayMediaPlayer.setDataSource(getApplicationContext(), uri);
+                anArrayMediaPlayer.prepare();
             }
             loadCompletedBGM = true;
         }
@@ -1026,7 +1023,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
-     * @param title
+     * @param title BGM名
      */
     private void SaveLoopPointDate(String title) {
         SharedPreferences        pref = getSharedPreferences(PREFERENCES_TITLE, MODE_PRIVATE);
@@ -1039,7 +1036,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * ループポイントが保存されていれば読み込む
      *
-     * @param title
+     * @param title BGM名
      */
     public void LoadLoopPointDate(String title) {
         Log.v("テスト", "[LoadLoopPointDate:" + title + "]");
