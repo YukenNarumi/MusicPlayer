@@ -7,17 +7,17 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -82,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private SimpleDateFormat dataFormat = new SimpleDateFormat("mm:ss.SS", Locale.JAPAN);
 
     private Handler       m_handler;
-    private MediaPlayer   mediaPlayer;
     private MediaPlayer[] arrayMediaPlayer;
 
     private TextView nowTimeText;
@@ -404,8 +403,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         m_handler.postDelayed(this, updateIntarval);
         setContentView(R.layout.activity_main);
 
-        seekBarMap = new HashMap<SeekBarType, SeekBar>();
-        buttonMap = new HashMap<ButtonType, Button>();
+        seekBarMap = new HashMap<>();
+        buttonMap = new HashMap<>();
 
         // permissionの確認
         checkPermission();
@@ -621,9 +620,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * permissionのアクセス許可の結果受け取り
      *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode  requestPermissionsの第3引数で指定した値
+     * @param permissions  requestPermissionsの第2引数で指定した値
+     * @param grantResults permmisionが許可されたかどうか
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -650,15 +649,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     @Override
     public void run() {
-
         // ここで毎フレームの処理
-//        Log.v("テスト", "これはメッセージです「～」終わり");
-/*
-        if (mediaPlayer == null) {
-            m_handler.postDelayed(this, this.updateIntarval);
-            return;
-        }
-*/
         UpdateNowTime();
 
         if (!IsPlayingMediaPlayer()) {
@@ -729,7 +720,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         int _max        = loopPointStartSeekBar.getMax();
         int _nowStart   = loopPointStartSeekBar.getProgress();
         int _nowEnd     = loopPointEndSeekBar.getProgress();
-        int _difference = CalculateProgressToTime(Math.abs(_nowEnd - _nowStart), _max, musicLength);
+        int _difference = CalculateProgressToTime((_nowEnd - _nowStart), _max, musicLength);
 
         Log.v("テスト",
               "[difference" + "(" + (_difference <= LOOP_POINT_INTERVAL) + "):" + _difference + " = " + _nowEnd + " - " + _nowStart + "][start:" + prevProgressStart + ">>" + loopPointStart + "][end:" + prevProgressEnd + ">>" + loopPointEnd + "]"
@@ -739,10 +730,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (_difference <= LOOP_POINT_INTERVAL) {
             switch (loopType) {
             case START:
-                loopPointStart = prevProgressStart;
+                loopPointStart = loopPointEnd - LOOP_POINT_INTERVAL;
                 break;
             case END:
-                loopPointEnd = prevProgressEnd;
+                loopPointEnd = loopPointStart + LOOP_POINT_INTERVAL;
                 break;
             }
             UpdateLoopPointSeekbar();
@@ -840,16 +831,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         SaveLoopPointDate(BGMTitle);
 
-        // 終了を検知するリスナー
-/*
-        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-            Log.d("debug","end of audio");
-            audioStop();
-            }
-        });
-*/
         this.arrayMediaPlayer[this.playNumber].setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -948,7 +929,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopCheckingAfter = false;
 
         // シークバーの操作禁止
-        prevSeekBarEnabled = new ArrayList<Boolean>();
+        prevSeekBarEnabled = new ArrayList<>();
         for (SeekBarType key : seekBarMap.keySet()) {
             SeekBar _seekBar = seekBarMap.get(key);
             prevSeekBarEnabled.add(_seekBar.isEnabled());
@@ -956,7 +937,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         // ボタンの操作禁止
-        prevButtonEnabled = new ArrayList<Boolean>();
+        prevButtonEnabled = new ArrayList<>();
         for (ButtonType key : buttonMap.keySet()) {
             Button btn = buttonMap.get(key);
             prevButtonEnabled.add(btn.isEnabled());
@@ -1023,6 +1004,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * ループポイントを保存する
+     *
      * @param title BGM名
      */
     private void SaveLoopPointDate(String title) {
@@ -1030,7 +1013,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         SharedPreferences.Editor e    = pref.edit();
         e.putInt(title + "_Start", loopPointStart);
         e.putInt(title + "_End", loopPointEnd);
-        e.commit();
+        e.apply();
     }
 
     /**
