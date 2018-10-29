@@ -17,7 +17,10 @@ public class Album {
     public String artist;
     public int    tracks;
 
-    public static final String[] FILLED_PROJECTION = {
+    /**
+     * 検索時に使用する取得する列名(カラム名、フィールド名)の配列
+     */
+    private static final String[] FILLED_PROJECTION = {
         MediaStore.Audio.Albums._ID,
         MediaStore.Audio.Albums.ALBUM,
         MediaStore.Audio.Albums.ALBUM_ART,
@@ -26,7 +29,12 @@ public class Album {
         MediaStore.Audio.Albums.NUMBER_OF_SONGS
     };
 
-    public Album(Cursor cursor) {
+    /**
+     * デフォルトコンストラクタ
+     *
+     * @param cursor データベースクエリの検索結果
+     */
+    private Album(Cursor cursor) {
         id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Albums._ID));
         album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM));
         albumArt = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
@@ -53,6 +61,10 @@ public class Album {
         );
 
         List albums = new ArrayList();
+        if (cursor == null) {
+            return albums;
+        }
+
         while (cursor.moveToNext()) {
             albums.add(new Album(cursor));
         }

@@ -22,7 +22,10 @@ public class Track {
     public long   duration;       // 再生時間(ミリ秒)
     public int    trackNo;        // アルバムのトラックナンバ
 
-    public static final String[] COLUMNS = {
+    /**
+     * 検索時に使用する取得する列名(カラム名、フィールド名)の配列
+     */
+    private static final String[] COLUMNS = {
         MediaStore.Audio.Media._ID,
         MediaStore.Audio.Media.DATA,
         MediaStore.Audio.Media.TITLE,
@@ -34,7 +37,12 @@ public class Track {
         MediaStore.Audio.Media.TRACK
     };
 
-    public Track(Cursor cursor) {
+    /**
+     * デフォルトコンストラクタ
+     *
+     * @param cursor データベースクエリの検索結果
+     */
+    private Track(Cursor cursor) {
         id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
         path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
         title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
@@ -62,7 +70,12 @@ public class Track {
                                        null,
                                        null
         );
+
         List tracks = new ArrayList();
+        if (cursor == null) {
+            return tracks;
+        }
+
         while (cursor.moveToNext()) {
             if (cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)) < 3000) {
                 continue;

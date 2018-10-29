@@ -1,15 +1,12 @@
 package com.example.yuken.musicplayer;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.database.Cursor;
-import android.provider.MediaStore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Root {
-
+    // 項目タイプ
     public enum RootMenu {
         ARTIST,
         ALBUM,
@@ -20,11 +17,23 @@ public class Root {
     public RootMenu menu;
     public String   title;
 
-    public Root(RootMenu root, String name) {
+    /**
+     * デフォルトコンストラクタ
+     *
+     * @param root 項目タイプ
+     * @param name 項目名
+     */
+    private Root(RootMenu root, String name) {
         menu = root;
         title = name;
     }
 
+    /**
+     * ルート画面に表示する項目一覧取得
+     *
+     * @param activity ダイアログを開いているactivity
+     * @return 表示する項目一覧
+     */
     public static List getItems(Context activity) {
         List artists = new ArrayList();
         artists.add(new Root(RootMenu.ARTIST, "アーティスト"));
