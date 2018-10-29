@@ -3,7 +3,6 @@ package com.example.yuken.musicplayer;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,7 +12,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackDialogFragment extends DialogFragment implements AdapterView.OnItemClickListener {
+public class TrackDialogFragment extends BaseDialogFragment implements AdapterView.OnItemClickListener {
 
     public enum DialogSceneType {
         HOME,
@@ -91,8 +90,8 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
     private void UpdateSceneHome() {
         ClearSelectWord();
 
-        List<Root>      root    = Root.getItems(getActivity());
-        ListRootAdapter adapter = new ListRootAdapter(getActivity(), root);
+        List            root    = Root.getItems(getActivityNonNull());
+        ListRootAdapter adapter = new ListRootAdapter(getActivityNonNull(), root);
         infoList.setAdapter(adapter);
     }
 
@@ -100,8 +99,8 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アーティスト一覧表示
      */
     private void UpdateSceneArtist() {
-        List<Artist>      artist  = Artist.getItems(getActivity());
-        ListArtistAdapter adapter = new ListArtistAdapter(getActivity(), artist);
+        List              artist  = Artist.getItems(getActivityNonNull());
+        ListArtistAdapter adapter = new ListArtistAdapter(getActivityNonNull(), artist);
         infoList.setAdapter(adapter);
     }
 
@@ -109,8 +108,8 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * アルバム一覧表示
      */
     private void UpdateSceneAlbum() {
-        List<Album>      albums  = Album.getItems(getActivity(), selectWordArtist);
-        ListAlbumAdapter adapter = new ListAlbumAdapter(getActivity(), albums);
+        List             albums  = Album.getItems(getActivityNonNull(), selectWordArtist);
+        ListAlbumAdapter adapter = new ListAlbumAdapter(getActivityNonNull(), albums);
         infoList.setAdapter(adapter);
     }
 
@@ -118,21 +117,17 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
      * トラック一覧表示
      */
     private void UpdateSceneTracks() {
-        List<Track>      tracks  = Track.getItems(getActivity(), selectWordAlbum);
-        ListTrackAdapter adapter = new ListTrackAdapter(getActivity(), tracks);
+        List             tracks  = Track.getItems(getActivityNonNull(), selectWordAlbum);
+        ListTrackAdapter adapter = new ListTrackAdapter(getActivityNonNull(), tracks);
         infoList.setAdapter(adapter);
     }
 
-    /**
-     * @param savedInstanceState
-     * @return
-     */
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         prevSceneType = new ArrayList<>();
 
-        Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivityNonNull());
         dialog.setContentView(R.layout.dialog_track_list);
 
         backButton = dialog.findViewById(R.id.backkBtn);
@@ -144,7 +139,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
         });
 
         infoList = dialog.findViewById(R.id.listTrack);
-        infoList.setOnItemClickListener((AdapterView.OnItemClickListener)this);
+        infoList.setOnItemClickListener(this);
 
         UpdateScene(DialogSceneType.HOME);
 
@@ -232,7 +227,7 @@ public class TrackDialogFragment extends DialogFragment implements AdapterView.O
     private void UpdateOnItemClickTrack(AdapterView<?> parent, int position) {
         ListView     listView     = (ListView)parent;
         Track        item         = (Track)listView.getItemAtPosition(position);
-        MainActivity mainActivity = (MainActivity)getActivity();
+        MainActivity mainActivity = (MainActivity)getActivityNonNull();
         if (mainActivity.LoadBGM(item.uri)) {
             mainActivity.ClearMediaPlayerInfo();
             mainActivity.LoadLoopPointDate(item.title);

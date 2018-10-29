@@ -3,13 +3,12 @@ package com.example.yuken.musicplayer;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
 
-public class NumberPickerDialogFragment extends DialogFragment {
+public class NumberPickerDialogFragment extends BaseDialogFragment {
 
     private static final int UNIT_TIME_MINTES      = 60000;
     private static final int UNIT_TIME_SECOND      = 1000;
@@ -24,7 +23,14 @@ public class NumberPickerDialogFragment extends DialogFragment {
     private NumberPicker          numberpickerSecond;
     private NumberPicker          numberpickerMilliSecond;
 
-    // 分秒ミリ秒の設定できる時間の算出
+    /**
+     * 設定できる最大時間の算出
+     *
+     * @param minTime      「分,秒,ミリ秒」の設定に必要な最小値をミリ秒に変換した値(ms)
+     * @param maxRangeTime ナンバーピッカーに設定可能な最大値
+     * @param totalTime    再生時間(ms)
+     * @return 算出した時間
+     */
     private int ConvertMaxTime(int minTime, int maxRangeTime, int totalTime) {
         if (minTime < 0 || maxRangeTime < 0 || totalTime < 0) {
             return 0;
@@ -40,46 +46,89 @@ public class NumberPickerDialogFragment extends DialogFragment {
         return maxRangeTime - 1;
     }
 
+    /**
+     * 「分」の設定できる最大時間の算出
+     *
+     * @param totalTime 再生時間(ms)
+     * @return 設定可能な時間(m)
+     */
     private int ConvertMaxTimeToMintes(int totalTime) {
         return ConvertMaxTime(UNIT_TIME_MINTES, RANGE_TIME_MINTES, totalTime);
     }
 
+    /**
+     * 「秒」の設定できる最大時間の算出
+     *
+     * @param totalTime 再生時間(ms)
+     * @return 設定可能な時間(s)
+     */
     private int ConvertMaxTimeToSecond(int totalTime) {
         return ConvertMaxTime(UNIT_TIME_SECOND, RANGE_TIME_SECOND, totalTime);
     }
 
+    /**
+     * 「ミリ秒」の設定できる最大時間の算出
+     *
+     * @param totalTime 再生時間(ms)
+     * @return 設定可能な時間(ms)
+     */
     private int ConvertMaxTimeToMilliSecond(int totalTime) {
         return ConvertMaxTime(UNIT_TIME_MILLISECOND, RANGE_TIME_MILLISECOND, totalTime);
     }
 
-    // 通常の分秒ミリ秒への時間の算出
-    private int ConvertTime(int minTime, int maxRangeTime, int totalTime) {
-        if (minTime < 0 || maxRangeTime < 0 || totalTime < 0) {
+    /**
+     * 現在の時間の算出
+     *
+     * @param minTime      「分,秒,ミリ秒」の設定に必要な最小値をミリ秒に変換した値(ms)
+     * @param maxRangeTime ナンバーピッカーに設定可能な最大値
+     * @param currentTime  現在時刻(ms)
+     * @return 算出した時間
+     */
+    private int ConvertTime(int minTime, int maxRangeTime, int currentTime) {
+        if (minTime < 0 || maxRangeTime < 0 || currentTime < 0) {
             return 0;
         }
-        if (totalTime < minTime) {
+        if (currentTime < minTime) {
             return 0;
         }
-        double _caluclate = Math.floor((double)totalTime / (double)minTime) % maxRangeTime;
+        double _caluclate = Math.floor((double)currentTime / (double)minTime) % maxRangeTime;
         return (int)_caluclate;
     }
 
-    private int ConvertTimeToMintes(int totalTime) {
-        return ConvertTime(UNIT_TIME_MINTES, RANGE_TIME_MINTES, totalTime);
+    /**
+     * 「分」の現在の時間の算出
+     *
+     * @param currentTime 現在時刻(ms)
+     * @return 現在時刻(m)
+     */
+    private int ConvertTimeToMintes(int currentTime) {
+        return ConvertTime(UNIT_TIME_MINTES, RANGE_TIME_MINTES, currentTime);
     }
 
-    private int ConvertTimeToSecond(int totalTime) {
-        return ConvertTime(UNIT_TIME_SECOND, RANGE_TIME_SECOND, totalTime);
+    /**
+     * 「秒」の現在の時間の算出
+     *
+     * @param currentTime 現在時刻(ms)
+     * @return 現在時刻(s)
+     */
+    private int ConvertTimeToSecond(int currentTime) {
+        return ConvertTime(UNIT_TIME_SECOND, RANGE_TIME_SECOND, currentTime);
     }
 
-    private int ConvertTimeToMilliSecond(int totalTime) {
-        return ConvertTime(UNIT_TIME_MILLISECOND, RANGE_TIME_MILLISECOND, totalTime);
+    /**
+     * 「ミリ秒」の現在の時間の算出
+     *
+     * @param currentTime 現在時刻(ms)
+     * @return 現在時刻(ms)
+     */
+    private int ConvertTimeToMilliSecond(int currentTime) {
+        return ConvertTime(UNIT_TIME_MILLISECOND, RANGE_TIME_MILLISECOND, currentTime);
     }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(getActivity());
+        Dialog dialog = new Dialog(getActivityNonNull());
         dialog.setContentView(R.layout.dialog_numberpicker);
 
         numberpickerMinute = dialog.findViewById(R.id.numberPickerMinute);
@@ -93,7 +142,7 @@ public class NumberPickerDialogFragment extends DialogFragment {
 
 
         // 元画面から値を取得
-        int _musicLength = getArguments().getInt("MusicLength");
+        int _musicLength = getArgumentsNonNull().getInt("MusicLength");
         Log.v("テスト",
               "ダイアログ値渡しテスト:" + ConvertMaxTimeToMintes(_musicLength) + "/" + ConvertMaxTimeToSecond(
                   _musicLength) + "/" + ConvertMaxTimeToMilliSecond(_musicLength)
@@ -104,12 +153,12 @@ public class NumberPickerDialogFragment extends DialogFragment {
 
         // 現在の設定時間を反映
         loopType = MainActivity.fromOrdinal(MainActivity.LoopType.class,
-                                            getArguments().getInt("LoopType")
+                                            getArgumentsNonNull().getInt("LoopType")
         );
         String _loopPointKey = (loopType == MainActivity.LoopType.START
                                 ? "LoopPointStart"
                                 : "LoopPointEnd");
-        int _loopPoint = getArguments().getInt(_loopPointKey);
+        int _loopPoint = getArgumentsNonNull().getInt(_loopPointKey);
         Log.v("テスト",
               "ダイアログ値渡しテスト:" + ConvertTimeToMintes(_loopPoint) + "/" + ConvertTimeToSecond(
                   _loopPoint) + "/" + ConvertTimeToMilliSecond(_loopPoint)
@@ -130,7 +179,9 @@ public class NumberPickerDialogFragment extends DialogFragment {
         return dialog;
     }
 
-    //
+    /**
+     * ナンバーピッカーで設定した値を反映する
+     */
     private void SetNumbetPickerrValue() {
         int _minute      = numberpickerMinute.getValue();
         int _second      = numberpickerSecond.getValue();
@@ -141,7 +192,7 @@ public class NumberPickerDialogFragment extends DialogFragment {
 
         Log.v("テスト", "SetNumbetPickerrValue:" + loopType);
 
-        MainActivity mainActivity = (MainActivity)getActivity();
+        MainActivity mainActivity = (MainActivity)getActivityNonNull();
         mainActivity.UpdateNumbetPickerr(loopType, _total);
     }
 }
