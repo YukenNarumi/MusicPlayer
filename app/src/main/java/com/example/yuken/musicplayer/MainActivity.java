@@ -98,14 +98,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Map<ButtonType, Button> buttonMap;
 
     //
-    private int  loopPointStart    = 0; // ms
-    private int  loopPointEnd      = 0; // ms
-    private long preTime           = 0;
-    private int  musicLength       = 0;
-    private int  playTime          = 0;    // 現在の再生時刻
-    private int  playNumber        = 0;    // 再生中のメディアプレイヤー番号
-    private int  prevProgressStart = 0;
-    private int  prevProgressEnd   = 0;
+    private int  loopPointStart = 0; // ms
+    private int  loopPointEnd   = 0; // ms
+    private long preTime        = 0;
+    private int  musicLength    = 0;
+    private int  playTime       = 0;    // 現在の再生時刻
+    private int  playNumber     = 0;    // 再生中のメディアプレイヤー番号
 
     private TrackDialogFragment        trackDialogFragment;
     private NumberPickerDialogFragment numberpickerDialogFragment;
@@ -116,8 +114,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean permissionGranted  = false;
     private boolean loopChecking       = false;
     private boolean loopCheckingAfter  = false;
-    private boolean rangeBarTouch      = false;
-    private boolean rangeBarTouchEnd   = false;
 
     private List<Boolean> prevSeekBarEnabled;
     private List<Boolean> prevButtonEnabled;
@@ -233,21 +229,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         preTime = 0;
         playTime = 0;
         playNumber = 0;
-        prevProgressStart = 0;
-        prevProgressEnd = 0;
         numberpickerUpdate = false;
 
-        UpdatePrevLoopPoint();
         UpdateLoopPointText();
         UpdateLoopPointSeekbar();
-    }
-
-    /**
-     * 前回のループポイントを更新
-     */
-    private void UpdatePrevLoopPoint() {
-        prevProgressStart = loopPointStart;
-        prevProgressEnd = loopPointEnd;
     }
 
     /**
@@ -266,23 +251,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * シークバー位置をループポイントに対応させる
      */
     private void UpdateLoopPointSeekbar() {
-        if (seekBarMap.get(SeekBarType.LOOP_POINT_START) == null || seekBarMap.get(SeekBarType.LOOP_POINT_END) == null) {
+        if (loopPointRangeBar == null) {
             return;
         }
 
-        SeekBar loopPointStartSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_START);
-        SeekBar loopPointEndSeekBar   = seekBarMap.get(SeekBarType.LOOP_POINT_END);
-
-        int _max   = loopPointStartSeekBar.getMax();
+        int _max   = MAX_SEEKBAR_COUNT - 1;
         int _start = CalculateTimeToProgress(loopPointStart, musicLength, _max);
         int _end   = CalculateTimeToProgress(loopPointEnd, musicLength, _max);
-        loopPointStartSeekBar.setProgress(_start);
-        loopPointEndSeekBar.setProgress(_end);
-
-        _max = MAX_SEEKBAR_COUNT - 1;
-        _start = CalculateTimeToProgress(loopPointStart, musicLength, _max);
-        _end = CalculateTimeToProgress(loopPointEnd, musicLength, _max);
-        Log.v("テスト", "[setThumbIndices(" + _start + ", " + _end + ")");
         loopPointRangeBar.setThumbIndices(_start, _end);
     }
 
@@ -421,8 +396,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // permissionの確認
         checkPermission();
 
-        UpdatePrevLoopPoint();
-
         // ループポイントの時間
         nowTimeText = findViewById(R.id.textNowTime);
         loopPointStartText = findViewById(R.id.loopPointStart);
@@ -456,56 +429,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         seekBarMap.put(SeekBarType.NOW_TIME, nowTimeSeekBar);
 
         // ループポイントの時間
-        SeekBar loopPointStartSeekBar = findViewById(R.id.seekBarStart);
-        loopPointStartSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // ナンバーピッカーから設定した直後は処理しない
-                if (numberpickerUpdate) {
-                    return;
-                }
-
-                UpdateSeekbar(LoopType.START);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateSeekbar(LoopType.START);
-            }
-        });
-        seekBarMap.put(SeekBarType.LOOP_POINT_START, loopPointStartSeekBar);
-
-        SeekBar loopPointEndSeekBar = findViewById(R.id.seekBarEnd);
-        loopPointEndSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // ナンバーピッカーから設定した直後は処理しない
-                if (numberpickerUpdate) {
-                    return;
-                }
-
-                UpdateSeekbar(LoopType.END);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                UpdateSeekbar(LoopType.END);
-            }
-        });
-        seekBarMap.put(SeekBarType.LOOP_POINT_END, loopPointEndSeekBar);
-        //
-
-        ///
         loopPointRangeBar = findViewById(R.id.rangeBar);
         loopPointRangeBar.setTickCount(MAX_SEEKBAR_COUNT);
         loopPointRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
@@ -516,10 +439,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                     return;
                 }
 
-                UpdateSeekbar_(leftThumbIndex, rightThumbIndex);
+                UpdateSeekbar(leftThumbIndex, rightThumbIndex);
             }
         });
-        ///
 
         // 曲選択ダイアログ表示ボタン
         trackDialogFragment = new TrackDialogFragment();
@@ -724,8 +646,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public void UpdateNumbetPickerr(LoopType dialogType, int loopPoint) {
         numberpickerUpdate = true;
 
-        UpdatePrevLoopPoint();
-
         if (dialogType == LoopType.START) {
             this.loopPointStart = loopPoint;
         }
@@ -740,64 +660,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     /**
      * シークバー操作でループポイント更新
      */
-    private void UpdateSeekbar(LoopType loopType) {
+    private void UpdateSeekbar(int leftThumbIndex, int rightThumbIndex) {
         if (musicLength <= MUSIC_LENGTH_MIN) {
             return;
         }
-
-        SeekBar loopPointStartSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_START);
-        SeekBar loopPointEndSeekBar   = seekBarMap.get(SeekBarType.LOOP_POINT_END);
-
-        int _max        = loopPointStartSeekBar.getMax();
-        int _nowStart   = loopPointStartSeekBar.getProgress();
-        int _nowEnd     = loopPointEndSeekBar.getProgress();
-        int _difference = CalculateProgressToTime((_nowEnd - _nowStart), _max, musicLength);
-
-        Log.v("テスト",
-              "[difference" + "(" + (_difference <= LOOP_POINT_INTERVAL) + "):" + _difference + " = " + _nowEnd + " - " + _nowStart + "][start:" + prevProgressStart + ">>" + loopPointStart + "][end:" + prevProgressEnd + ">>" + loopPointEnd + "]"
-        );
-
-        // ループポイントの始点・終点の間隔が短すぎる場合前回の値に戻す
-        if (_difference <= LOOP_POINT_INTERVAL) {
-            switch (loopType) {
-            case START:
-                loopPointStart = loopPointEnd - LOOP_POINT_INTERVAL;
-                break;
-            case END:
-                loopPointEnd = loopPointStart + LOOP_POINT_INTERVAL;
-                break;
-            }
-            UpdateLoopPointSeekbar();
-        }
-        else {
-            UpdatePrevLoopPoint();
-            switch (loopType) {
-            case START:
-                loopPointStart = CalculateProgressToTime(_nowStart, _max, musicLength);
-                break;
-            case END:
-                loopPointEnd = CalculateProgressToTime(_nowEnd, _max, musicLength);
-                break;
-            }
-        }
-
-        UpdateLoopPointText();
-    }
-
-    /**
-     * シークバー操作でループポイント更新
-     */
-    private void UpdateSeekbar_(int leftThumbIndex, int rightThumbIndex) {
-        if (musicLength <= MUSIC_LENGTH_MIN) {
-            return;
-        }
-        rangeBarTouch = true;
-        rangeBarTouchEnd = true;
-        int     _max  = MAX_SEEKBAR_COUNT;
+        int _max = MAX_SEEKBAR_COUNT;
 
         Log.v("テスト", "[UpdateSeekbar:" + leftThumbIndex + " - " + rightThumbIndex + "]");
 
-        UpdatePrevLoopPoint();
         loopPointStart = CalculateProgressToTime(leftThumbIndex, _max, musicLength);
         loopPointEnd = CalculateProgressToTime(rightThumbIndex, _max, musicLength);
 
@@ -920,6 +790,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             SeekBar _seekBar = seekBarMap.get(key);
             _seekBar.setEnabled(false);
         }
+        loopPointRangeBar.setEnabled(false);
 
         // ボタンの操作禁止
         for (ButtonType key : buttonMap.keySet()) {
@@ -962,6 +833,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             SeekBar _seekBar = seekBarMap.get(key);
             _seekBar.setEnabled(true);
         }
+        loopPointRangeBar.setEnabled(true);
 
         // ボタンの操作禁止
         for (ButtonType key : buttonMap.keySet()) {
@@ -997,6 +869,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             prevSeekBarEnabled.add(_seekBar.isEnabled());
             _seekBar.setEnabled(false);
         }
+        prevSeekBarEnabled.add(loopPointRangeBar.isEnabled());
+        loopPointRangeBar.setEnabled(false);
 
         // ボタンの操作禁止
         prevButtonEnabled = new ArrayList<>();
@@ -1045,7 +919,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         for (SeekBarType key : seekBarMap.keySet()) {
             SeekBar _seekBar = seekBarMap.get(key);
             _seekBar.setEnabled(prevSeekBarEnabled.get(_index));
+            _index++;
         }
+        loopPointRangeBar.setEnabled(prevSeekBarEnabled.get(_index));
         while (prevSeekBarEnabled.remove((Integer)2)) {
         }
         prevSeekBarEnabled = null;
@@ -1107,7 +983,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (!_load) {
             return;
         }
-        UpdatePrevLoopPoint();
         UpdateLoopPointText();
         UpdateLoopPointSeekbar();
     }
