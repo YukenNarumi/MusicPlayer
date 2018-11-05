@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#def"
     android:gravity="center"
     android:orientation="vertical"
@@ -24,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <SeekBar
                 android:id="@+id/seekBarNowTime"
@@ -33,8 +34,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="0.1"
                 android:max="1000"
-                android:progress="0"
-                />
+                android:progress="0" />
 
         </LinearLayout>
 
@@ -71,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/loopPointStart"
@@ -88,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnLoopPointStart"
@@ -104,8 +104,7 @@
                 android:layout_height="40dp"
                 android:layout_weight="0.1"
                 android:max="1000"
-                android:progress="0"
-                />
+                android:progress="0" />
 
         </LinearLayout>
 
@@ -122,7 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/loopPointEnd"
@@ -139,7 +138,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnLoopPointEnd"
@@ -155,12 +154,77 @@
                 android:layout_height="40dp"
                 android:layout_weight="0.1"
                 android:max="1000"
-                android:progress="1000"
-                />
+                android:progress="1000" />
 
         </LinearLayout>
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <com.edmodo.rangebar.RangeBar
+                android:id="@+id/rangeBar"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="0.1"
+                android:visibility="visible"
+                app:barColor="#00000000"
+                app:tickCount="1000" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnLoopPointStart_"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                android:text="S"
+                tools:text="S" />
+
+            <TextView
+                android:id="@+id/loopPointStart_"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:ems="10"
+                android:gravity="start"
+                android:textSize="30sp"
+                tools:text="00:00:00" />
+
+            <TextView
+                android:id="@+id/loopPointEnd_"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:ems="10"
+                android:gravity="end"
+                android:textSize="30sp"
+                tools:text="00:00:00" />
+
+            <Button
+                android:id="@+id/btnLoopPointEnd_"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.1"
+                tools:text="E" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/start"

@@ -20,6 +20,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.edmodo.rangebar.RangeBar;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,6 +48,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private static final int    updateIntarval       = 5;
     // ループポイント(終点)の受付猶予(ms)
     private static final int    receptionEndPoint    = 30;
+    // シークバー関連の最大値
+    private static final int    MAX_SEEKBAR_COUNT    = 1000;
 
     private static long clickTime = 0;
 
@@ -89,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private TextView loopPointEndText;
 
     private Map<SeekBarType, SeekBar> seekBarMap;
+    private RangeBar                  loopPointRangeBar;
 
     private Map<ButtonType, Button> buttonMap;
 
@@ -111,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private boolean permissionGranted  = false;
     private boolean loopChecking       = false;
     private boolean loopCheckingAfter  = false;
+    private boolean rangeBarTouch      = false;
+    private boolean rangeBarTouchEnd   = false;
 
     private List<Boolean> prevSeekBarEnabled;
     private List<Boolean> prevButtonEnabled;
@@ -266,12 +273,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         SeekBar loopPointStartSeekBar = seekBarMap.get(SeekBarType.LOOP_POINT_START);
         SeekBar loopPointEndSeekBar   = seekBarMap.get(SeekBarType.LOOP_POINT_END);
 
-        int _max = loopPointStartSeekBar.getMax();
-        loopPointStartSeekBar.setProgress(CalculateTimeToProgress(loopPointStart,
-                                                                  musicLength,
-                                                                  _max
-        ));
-        loopPointEndSeekBar.setProgress(CalculateTimeToProgress(loopPointEnd, musicLength, _max));
+        int _max   = loopPointStartSeekBar.getMax();
+        int _start = CalculateTimeToProgress(loopPointStart, musicLength, _max);
+        int _end   = CalculateTimeToProgress(loopPointEnd, musicLength, _max);
+        loopPointStartSeekBar.setProgress(_start);
+        loopPointEndSeekBar.setProgress(_end);
+
+        _max = MAX_SEEKBAR_COUNT - 1;
+        _start = CalculateTimeToProgress(loopPointStart, musicLength, _max);
+        _end = CalculateTimeToProgress(loopPointEnd, musicLength, _max);
+        Log.v("テスト", "[setThumbIndices(" + _start + ", " + _end + ")");
+        loopPointRangeBar.setThumbIndices(_start, _end);
     }
 
     /**
@@ -493,6 +505,22 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         seekBarMap.put(SeekBarType.LOOP_POINT_END, loopPointEndSeekBar);
         //
 
+        ///
+        loopPointRangeBar = findViewById(R.id.rangeBar);
+        loopPointRangeBar.setTickCount(MAX_SEEKBAR_COUNT);
+        loopPointRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
+            @Override
+            public void onIndexChangeListener(RangeBar rangeBar, int leftThumbIndex, int rightThumbIndex) {
+                // ナンバーピッカーから設定した直後は処理しない
+                if (numberpickerUpdate) {
+                    return;
+                }
+
+                UpdateSeekbar_(leftThumbIndex, rightThumbIndex);
+            }
+        });
+        ///
+
         // 曲選択ダイアログ表示ボタン
         trackDialogFragment = new TrackDialogFragment();
         Button buttonLoad = findViewById(R.id.loadButton);
@@ -525,6 +553,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 if (MainActivity.IsNotClickEvent()) {
                     return;
                 }
+
                 // 音楽再生
                 audioPlay();
             }
@@ -652,6 +681,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // ここで毎フレームの処理
         UpdateNowTime();
 
+//        UpdateSeekbarTouchEnd();
+
         if (!IsPlayingMediaPlayer()) {
             m_handler.postDelayed(this, updateIntarval);
             return;
@@ -754,6 +785,26 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * シークバー操作でループポイント更新
+     */
+    private void UpdateSeekbar_(int leftThumbIndex, int rightThumbIndex) {
+        if (musicLength <= MUSIC_LENGTH_MIN) {
+            return;
+        }
+        rangeBarTouch = true;
+        rangeBarTouchEnd = true;
+        int     _max  = MAX_SEEKBAR_COUNT;
+
+        Log.v("テスト", "[UpdateSeekbar:" + leftThumbIndex + " - " + rightThumbIndex + "]");
+
+        UpdatePrevLoopPoint();
+        loopPointStart = CalculateProgressToTime(leftThumbIndex, _max, musicLength);
+        loopPointEnd = CalculateProgressToTime(rightThumbIndex, _max, musicLength);
+
+        UpdateLoopPointText();
+    }
+
+    /**
      * BGMを実際にロードする
      *
      * @param uri 音楽ファイルのパス
@@ -807,6 +858,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        int _difference = loopPointEnd - loopPointStart;
+        if (_difference < LOOP_POINT_INTERVAL) {
+            // ループ間隔が不十分
+            Toast.makeText(getApplication(),
+                           "Error: Insufficient loop spacing. [" + _difference + " < " + LOOP_POINT_INTERVAL + "]",
+                           Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+        ///
 
         if (IsPlayingMediaPlayer()) {
             Toast.makeText(getApplication(),
