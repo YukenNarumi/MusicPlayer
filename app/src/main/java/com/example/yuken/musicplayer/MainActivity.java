@@ -35,21 +35,23 @@ import java.util.Map;
  */
 public class MainActivity extends AppCompatActivity implements Runnable {
 
-    private static final String PREFERENCES_TITLE    = "LoopSettingBGM";
+    private static final String PREFERENCES_TITLE       = "LoopSettingBGM";
     // リクエストコード:
-    private static final int    REQUEST_PERMISSION   = 1000;
+    private static final int    REQUEST_PERMISSION      = 1000;
     // ボタン連打対策:ボタンタップ後にタップできない間隔(ms)
-    private static final int    CLICK_EVENT_INTERVAL = 500;
+    private static final int    CLICK_EVENT_INTERVAL    = 500;
     // ループポイント設定に必要最低限のBGM長(ms)
-    private static final int    MUSIC_LENGTH_MIN     = 10000;
+    private static final int    MUSIC_LENGTH_MIN        = 10000;
     // ループポイントの始点・終点設定に必要な間隔(ms)
-    private static final int    LOOP_POINT_INTERVAL  = 5000;
+    private static final int    LOOP_POINT_INTERVAL     = 5000;
     // 更新処理の間隔(ms)
-    private static final int    updateIntarval       = 5;
+    private static final int    updateIntarval          = 5;
     // ループポイント(終点)の受付猶予(ms)
-    private static final int    receptionEndPoint    = 30;
+    private static final int    receptionEndPoint       = 30;
     // シークバー関連の最大値
-    private static final int    MAX_SEEKBAR_COUNT    = 1000;
+    private static final int    MAX_SEEKBAR_COUNT       = 1000;
+    // rangebarで実際に設定できる範囲は[0 ～ max - 1]のため
+    private static final int    CALCULATE_SEEKBAR_COUNT = MAX_SEEKBAR_COUNT - 1;
 
     private static long clickTime = 0;
 
@@ -255,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
-        int _max   = MAX_SEEKBAR_COUNT - 1;
+        int _max   = CALCULATE_SEEKBAR_COUNT;
         int _start = CalculateTimeToProgress(loopPointStart, musicLength, _max);
         int _end   = CalculateTimeToProgress(loopPointEnd, musicLength, _max);
         loopPointRangeBar.setThumbIndices(_start, _end);
@@ -603,14 +605,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // ここで毎フレームの処理
         UpdateNowTime();
 
-//        UpdateSeekbarTouchEnd();
+        numberpickerUpdate = false;
 
         if (!IsPlayingMediaPlayer()) {
             m_handler.postDelayed(this, updateIntarval);
             return;
         }
-
-        numberpickerUpdate = false;
 
         this.playTime += System.currentTimeMillis() - this.preTime;
 
@@ -664,7 +664,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (musicLength <= MUSIC_LENGTH_MIN) {
             return;
         }
-        int _max = MAX_SEEKBAR_COUNT;
+        int _max = CALCULATE_SEEKBAR_COUNT;
 
         Log.v("テスト", "[UpdateSeekbar:" + leftThumbIndex + " - " + rightThumbIndex + "]");
 
