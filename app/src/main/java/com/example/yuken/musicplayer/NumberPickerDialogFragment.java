@@ -171,7 +171,7 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
         setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 音楽再生
+                // ナンバーピッカーの値を反映
                 SetNumbetPickerrValue();
             }
         });

@@ -138,6 +138,18 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
             }
         });
 
+        Button _closeButton = dialog.findViewById(R.id.trackCloseBtn);
+        _closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (sceneType == DialogSceneType.END) {
+                    return;
+                }
+                UpdateScene(DialogSceneType.END);
+                TrackDialogFragment.this.dismiss();
+            }
+        });
+
         infoList = dialog.findViewById(R.id.listTrack);
         infoList.setOnItemClickListener(this);
 
