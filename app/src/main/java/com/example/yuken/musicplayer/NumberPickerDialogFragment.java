@@ -12,11 +12,11 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
 
     private static final int UNIT_TIME_MINTES      = 60000;
     private static final int UNIT_TIME_SECOND      = 1000;
-    private static final int UNIT_TIME_MILLISECOND = 1;
+    private static final int UNIT_TIME_MILLISECOND = 10;
 
     private static final int RANGE_TIME_MINTES      = 60;
     private static final int RANGE_TIME_SECOND      = 60;
-    private static final int RANGE_TIME_MILLISECOND = 1000;
+    private static final int RANGE_TIME_MILLISECOND = 100;
 
     private MainActivity.LoopType loopType;
     private NumberPicker          numberpickerMinute;
