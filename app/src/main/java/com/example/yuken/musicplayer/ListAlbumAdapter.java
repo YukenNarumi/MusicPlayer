@@ -2,8 +2,6 @@ package com.example.yuken.musicplayer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,17 +66,11 @@ public class ListAlbumAdapter extends ArrayAdapter<Album> {
         String _tracksTextView = (String.valueOf(item.tracks) + "tracks");
         holder.tracksTextView.setText(_tracksTextView);
 
+        holder.artworkImageView.setImageResource(ImageCache.GetGrayDefaultID());
         String path = item.albumArt;
-        holder.artworkImageView.setImageResource(R.drawable.dummy_album_art_slim_gray);
         if (path == null) {
-            path = String.valueOf(R.drawable.dummy_album_art_slim);
-            Bitmap bitmap = ImageCache.getImage(path);
-            if (bitmap == null) {
-                bitmap = BitmapFactory.decodeResource(Mcontext.getResources(),
-                                                      R.drawable.dummy_album_art_slim
-                );
-                ImageCache.setImage(path, bitmap);
-            }
+            path = ImageCache.GetDefaultPath();
+            ImageCache.CacheDefault(Mcontext.getResources());
         }
         holder.artworkImageView.setTag(path);
         ImageGetTask task = new ImageGetTask(holder.artworkImageView);
