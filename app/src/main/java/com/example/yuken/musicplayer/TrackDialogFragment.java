@@ -28,6 +28,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
     private ListView                   infoList;
     private String                     selectWordArtist;
     private String                     selectWordAlbum;
+    private TrackDetail                trackDetail;
 
     /**
      * アーティストが関係しているアルバム、
@@ -79,6 +80,8 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         else if (type == DialogSceneType.TRACK) {
             UpdateSceneTracks();
         }
+
+        trackDetail.Hidden();
 
         prevSceneType.add(sceneType);
         sceneType = type;
@@ -149,6 +152,8 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
                 TrackDialogFragment.this.dismiss();
             }
         });
+
+        trackDetail = new TrackDetail(getActivityNonNull(), dialog);
 
         infoList = dialog.findViewById(R.id.listTrack);
         infoList.setOnItemClickListener(this);
@@ -227,6 +232,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         Album    item     = (Album)listView.getItemAtPosition(position);
         selectWordAlbum = "album='" + item.album + "'";
         UpdateScene(DialogSceneType.TRACK);
+        trackDetail.ShowAlbumInfo(item);
     }
 
     /**
