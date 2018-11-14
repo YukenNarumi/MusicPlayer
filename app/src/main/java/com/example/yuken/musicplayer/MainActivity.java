@@ -77,6 +77,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         END
     }
 
+    private enum TextType {
+        NOW_TIME,
+        TITLE,
+        ARTIST,
+        ALBUM,
+        LOOP_START,
+        LOOP_END,
+        END
+    }
+
     /**
      * ordinal から指定した Enum の要素に変換する汎用関数
      */
@@ -90,14 +100,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Handler       m_handler;
     private MediaPlayer[] arrayMediaPlayer;
 
-    private TextView nowTimeText;
-    private TextView loopPointStartText;
-    private TextView loopPointEndText;
-
     private Map<SeekBarType, SeekBar> seekBarMap;
     private RangeBar                  loopPointRangeBar;
 
     private Map<ButtonType, Button> buttonMap;
+    private Map<TextType, TextView> textMap;
 
     //
     private int  loopPointStart = 0; // ms
@@ -122,6 +129,70 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private String BGMTitle;
     ///
+
+    /**
+     * 該当キーがmapに設定済みかどうか
+     *
+     * @param map  確認対象のmap
+     * @param keys キー
+     * @param <T>  ジェネリクス:マップのキー
+     * @param <U>  ジェネリクス:マップの値
+     * @return 追加の有無 / true:未設定, false:設定済み
+     */
+    private <T, U> boolean IsNotMapConfigured(Map<T, U> map, T[] keys) {
+        if (map == null) {
+            Log.v("テスト", "[IsMapDuplicate:map == null]");
+            return true;
+        }
+        for (T key : keys) {
+            if (key == null) {
+                Log.v("テスト", "[IsMapDuplicate:key == null]");
+                return true;
+            }
+            if (map.get(key) == null) {
+                Log.v("テスト", "[IsMapDuplicate:map.get(" + key + ") == null]");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 確認対象のマップに値を追加できるか確認
+     *
+     * @param map 確認対象のmap
+     * @param key キー
+     * @param <T> ジェネリクス:マップのキー
+     * @param <U> ジェネリクス:マップの値
+     * @return 追加の有無 / true:不可能, false:可能
+     */
+    private <T, U> boolean CanNotAddMap(Map<T, U> map, T key) {
+        if (map == null) {
+            Log.v("テスト", "[CanNotAddMap:map == null]");
+            return true;
+        }
+        if (map.get(key) != null) {
+            Log.v("テスト", "[CanNotAddMap:map.get(" + key + ") == null]");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * ID指定でTextView配列に追加
+     *
+     * @param type 指定する列挙型ID
+     * @param id   TextViewのID
+     */
+    //Map<TextType, TextView> textMap
+    private void AddTextMap(TextType type, int id) {
+        if (CanNotAddMap(textMap, type)) {
+            return;
+        }
+
+        TextView _textView = findViewById(id);
+        textMap.put(type, _textView);
+    }
 
     /**
      * メディアプレイヤーが設定済みか
@@ -241,10 +312,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * ループポイントのテキスト更新
      */
     private void UpdateLoopPointText() {
-        if (loopPointStartText == null || loopPointEndText == null) {
+        TextType[] _keys = {
+            TextType.LOOP_START,
+            TextType.LOOP_END
+        };
+        if (IsNotMapConfigured(textMap, _keys)) {
             return;
         }
 
+        TextView loopPointStartText = textMap.get(TextType.LOOP_START);
+        TextView loopPointEndText   = textMap.get(TextType.LOOP_END);
         loopPointStartText.setText(dataFormat.format(loopPointStart));
         loopPointEndText.setText(dataFormat.format(loopPointEnd));
     }
@@ -267,12 +344,26 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * 現在の時間更新
      */
     private void UpdateNowTime() {
-        if (nowTimeText == null || seekBarMap.get(SeekBarType.NOW_TIME) == null) {
+        TextType[] _keysTextType = {
+            TextType.NOW_TIME,
+            TextType.TITLE,
+            TextType.ARTIST,
+            TextType.ALBUM,
+            };
+        if (IsNotMapConfigured(textMap, _keysTextType)) {
+            return;
+        }
+
+        SeekBarType[] _keysSeekBarType = {
+            SeekBarType.NOW_TIME,
+            };
+        if (IsNotMapConfigured(seekBarMap, _keysSeekBarType)) {
             return;
         }
 
         // ループ確認中の場合シークバー操作を禁止する
-        SeekBar nowTimeSeekBar = seekBarMap.get(SeekBarType.NOW_TIME);
+        TextView nowTimeText    = textMap.get(TextType.NOW_TIME);
+        SeekBar  nowTimeSeekBar = seekBarMap.get(SeekBarType.NOW_TIME);
         if (!IsLoopChecking()) {
             nowTimeSeekBar.setEnabled(loadCompletedBGM);
         }
@@ -281,11 +372,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         if (IsNotMediaPlayer()) {
             String _text = dataFormat.format(0) + "/" + dataFormat.format(musicLength);
             nowTimeText.setText(_text);
+            textMap.get(TextType.TITLE).setText("");
+            textMap.get(TextType.ARTIST).setText("");
+            textMap.get(TextType.ALBUM).setText("");
             nowTimeSeekBar.setProgress(CalculateTimeToProgress(0, musicLength, _max));
             return;
         }
-
-        int _nowPosition = arrayMediaPlayer[playNumber].getCurrentPosition();
 
         if (operationTimeBar) {
             int _now = CalculateProgressToTime(nowTimeSeekBar.getProgress(),
@@ -297,7 +389,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
 
-        String _text = dataFormat.format(_nowPosition) + "/" + dataFormat.format(musicLength);
+        int    _nowPosition = arrayMediaPlayer[playNumber].getCurrentPosition();
+        String _text        = dataFormat.format(_nowPosition) + "/" + dataFormat.format(musicLength);
         nowTimeText.setText(_text);
         nowTimeSeekBar.setProgress(CalculateTimeToProgress(_nowPosition, musicLength, _max));
     }
@@ -394,14 +487,18 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         seekBarMap = new HashMap<>();
         buttonMap = new HashMap<>();
+        textMap = new HashMap<>();
 
         // permissionの確認
         checkPermission();
 
         // ループポイントの時間
-        nowTimeText = findViewById(R.id.textNowTime);
-        loopPointStartText = findViewById(R.id.loopPointStart);
-        loopPointEndText = findViewById(R.id.loopPointEnd);
+        AddTextMap(TextType.NOW_TIME, R.id.textNowTime);
+        AddTextMap(TextType.TITLE, R.id.title);
+        AddTextMap(TextType.ARTIST, R.id.artist);
+        AddTextMap(TextType.ALBUM, R.id.album);
+        AddTextMap(TextType.LOOP_START, R.id.loopPointStart);
+        AddTextMap(TextType.LOOP_END, R.id.loopPointEnd);
         UpdateLoopPointText();
 
         SeekBar nowTimeSeekBar = findViewById(R.id.seekBarNowTime);
