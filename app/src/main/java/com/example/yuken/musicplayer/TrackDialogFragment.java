@@ -246,9 +246,11 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         ListView     listView     = (ListView)parent;
         Track        item         = (Track)listView.getItemAtPosition(position);
         MainActivity mainActivity = (MainActivity)getActivityNonNull();
-        if (mainActivity.LoadBGM(item.uri)) {
-            mainActivity.ClearMediaPlayerInfo();
-            mainActivity.LoadLoopPointDate(item.title);
+        if (!mainActivity.LoadBGM(item.uri)) {
+            return;
         }
+        mainActivity.ClearMediaPlayerInfo();
+        mainActivity.LoadLoopPointDate(item.title);
+        mainActivity.UpdateMusicData(item.title, item.artist, item.album);
     }
 }

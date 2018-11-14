@@ -1083,4 +1083,26 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         UpdateLoopPointText();
         UpdateLoopPointSeekbar();
     }
+
+    /**
+     * メイン画面用の曲情報更新処理
+     *
+     * @param title  選択した曲名
+     * @param artist 選択した曲のアーティスト
+     * @param album  選択した曲が収録されてるアルバム名
+     */
+    public void UpdateMusicData(String title, String artist, String album) {
+        TextType[] _keysTextType = {
+            TextType.TITLE,
+            TextType.ARTIST,
+            TextType.ALBUM,
+            };
+        if (IsNotMapConfigured(textMap, _keysTextType)) {
+            return;
+        }
+
+        textMap.get(TextType.TITLE).setText(title);
+        textMap.get(TextType.ARTIST).setText(artist);
+        textMap.get(TextType.ALBUM).setText(album);
+    }
 }
