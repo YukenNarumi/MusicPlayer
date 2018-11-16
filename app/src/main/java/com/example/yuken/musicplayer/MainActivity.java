@@ -741,13 +741,41 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @param loopPoint  ループポイント
      */
     public void UpdateNumbetPickerr(LoopType dialogType, int loopPoint) {
-        numberpickerUpdate = true;
+        // 曲の再生時間超えたら更新しない
+        if (loopPoint < 0 || musicLength < loopPoint) {
+            String _errorText = "Error: exceeded reproducing time.";
+            _errorText += "[" + dataFormat.format(musicLength);
+            _errorText += " > " + dataFormat.format(loopPoint) + "]";
+            Toast.makeText(getApplication(), _errorText, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        numberpickerUpdate = true;
+        boolean _replacement = false;
         if (dialogType == LoopType.START) {
-            this.loopPointStart = loopPoint;
+            _replacement = (loopPointEnd < loopPoint);
         }
         else if (dialogType == LoopType.END) {
-            this.loopPointEnd = loopPoint;
+            _replacement = (loopPoint < loopPointStart);
+        }
+
+        if (dialogType == LoopType.START) {
+            if (_replacement) {
+                this.loopPointStart = this.loopPointEnd;
+                this.loopPointEnd = loopPoint;
+            }
+            else {
+                this.loopPointStart = loopPoint;
+            }
+        }
+        else if (dialogType == LoopType.END) {
+            if (_replacement) {
+                this.loopPointEnd = this.loopPointStart;
+                this.loopPointStart = loopPoint;
+            }
+            else {
+                this.loopPointEnd = loopPoint;
+            }
         }
 
         UpdateLoopPointText();
