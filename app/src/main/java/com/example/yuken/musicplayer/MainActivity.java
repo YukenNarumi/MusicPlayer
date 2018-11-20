@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -191,6 +192,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         TextView _textView = findViewById(id);
+        // 文字列を表示し切れないときにはスクロールする
+        _textView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+        _textView.setMarqueeRepeatLimit(-1);
+        _textView.setSingleLine(true);
+        _textView.setSelected(true);
         textMap.put(type, _textView);
     }
 
