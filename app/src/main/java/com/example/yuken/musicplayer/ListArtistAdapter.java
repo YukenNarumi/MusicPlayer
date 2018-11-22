@@ -45,8 +45,11 @@ public class ListArtistAdapter extends ArrayAdapter<Artist> {
             convertView = mInflater.inflate(R.layout.item_artist, null);
             holder = new ListArtistAdapter.ViewHolder();
             holder.artistTextView = convertView.findViewById(R.id.artist);
+            holder.artistTextView.setSelected(true);
             holder.albumsTextView = convertView.findViewById(R.id.album);
+            holder.albumsTextView.setSelected(true);
             holder.tracksTextView = convertView.findViewById(R.id.tracks);
+            holder.tracksTextView.setSelected(true);
             convertView.setTag(holder);
         }
         else {

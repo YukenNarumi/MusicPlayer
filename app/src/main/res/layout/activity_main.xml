@@ -67,7 +67,10 @@
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:ellipsize="marquee"
                 android:gravity="center"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -75,14 +78,20 @@
                 android:id="@+id/artist"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:ellipsize="marquee"
                 android:gravity="center"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/album"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:ellipsize="marquee"
                 android:gravity="center"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:singleLine="true"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

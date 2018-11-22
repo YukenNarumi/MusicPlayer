@@ -48,8 +48,11 @@ public class ListAlbumAdapter extends ArrayAdapter<Album> {
             convertView = mInflater.inflate(R.layout.item_album, null);
             holder = new ViewHolder();
             holder.albumTextView = convertView.findViewById(R.id.title);
+            holder.albumTextView.setSelected(true);
             holder.artistTextView = convertView.findViewById(R.id.artist);
+            holder.artistTextView.setSelected(true);
             holder.tracksTextView = convertView.findViewById(R.id.tracks);
+            holder.tracksTextView.setSelected(true);
             holder.artworkImageView = convertView.findViewById(R.id.albumart);
             convertView.setTag(holder);
         }

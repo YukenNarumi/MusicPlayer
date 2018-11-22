@@ -44,6 +44,7 @@ public class ListRootAdapter extends ArrayAdapter<Root> {
             convertView = mInflater.inflate(R.layout.item_root, null);
             holder = new ListRootAdapter.ViewHolder();
             holder.titleTextView = (TextView)convertView.findViewById(R.id.title);
+            holder.titleTextView.setSelected(true);
             convertView.setTag(holder);
         }
         else {

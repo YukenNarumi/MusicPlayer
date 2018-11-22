@@ -17,7 +17,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="4dp"
         android:layout_marginTop="4dp"
+        android:ellipsize="marquee"
         android:gravity="left"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
         android:text="TextView"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -34,7 +37,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="marquee"
             android:gravity="left"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
             android:text="TextView"
             tools:text="artist" />
 

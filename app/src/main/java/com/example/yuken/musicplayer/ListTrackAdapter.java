@@ -45,8 +45,11 @@ public class ListTrackAdapter extends ArrayAdapter<Track> {
             convertView = mInflater.inflate(R.layout.item_track, null);
             holder = new ViewHolder();
             holder.trackTextView = (TextView)convertView.findViewById(R.id.textBGMTitle);
+            holder.trackTextView.setSelected(true);
             holder.artistTextView = (TextView)convertView.findViewById(R.id.textArtist);
+            holder.artistTextView.setSelected(true);
             holder.durationTextView = (TextView)convertView.findViewById(R.id.textDuration);
+            holder.durationTextView.setSelected(true);
             convertView.setTag(holder);
         }
         else {

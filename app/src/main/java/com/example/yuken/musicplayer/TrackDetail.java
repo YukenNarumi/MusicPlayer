@@ -29,8 +29,11 @@ public class TrackDetail {
         separatorLine = dialog.findViewById(R.id.addInformationSeparator);
         conclusion = dialog.findViewById(R.id.addInformation);
         albumTextView = dialog.findViewById(R.id.title);
+        albumTextView.setSelected(true);
         artistTextView = dialog.findViewById(R.id.artist);
+        artistTextView.setSelected(true);
         tracksTextView = dialog.findViewById(R.id.tracks);
+        tracksTextView.setSelected(true);
         artworkImageView = dialog.findViewById(R.id.albumart);
 
         SetVisible(false);

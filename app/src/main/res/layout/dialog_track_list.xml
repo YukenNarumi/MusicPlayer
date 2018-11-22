@@ -67,6 +67,9 @@
                         android:id="@+id/title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:singleLine="true"
                         android:text="AlbumTime"
                         android:textStyle="bold" />
 
@@ -79,12 +82,18 @@
                         android:id="@+id/artist"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:singleLine="true"
                         android:text="artist" />
 
                     <TextView
                         android:id="@+id/tracks"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:singleLine="true"
                         android:text="tracks" />
                 </LinearLayout>
             </LinearLayout>
