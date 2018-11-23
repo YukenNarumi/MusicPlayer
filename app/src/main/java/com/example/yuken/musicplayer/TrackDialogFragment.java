@@ -6,7 +6,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
 
     private ArrayList<DialogSceneType> prevSceneType;
     private DialogSceneType            sceneType;
-    private Button                     backButton;
+    private ImageButton                backButton;
     private ListView                   infoList;
     private String                     selectWordArtist;
     private String                     selectWordAlbum;
@@ -141,7 +141,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
             }
         });
 
-        Button _closeButton = dialog.findViewById(R.id.trackCloseBtn);
+        ImageButton _closeButton = dialog.findViewById(R.id.trackCloseBtn);
         _closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
