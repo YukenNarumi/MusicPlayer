@@ -511,6 +511,62 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     /**
+     * ナンバーピッカーダイアログの実行
+     *
+     * @param type ボタンタイプ
+     */
+    private void ExecuteNumberPickerDialog(ButtonType type) {
+        if (MainActivity.IsNotClickEvent()) {
+            return;
+        }
+        if (numberpickerDialogFragment.isResumed()) {
+            return;
+        }
+
+        // ダイアログに値を渡す
+        Bundle bundle = new Bundle();
+
+        // 念のためナンバーピッカー以外のものが来たら処理を終える
+        switch (type) {
+        case NUMBER_PICKER_START:
+            bundle.putInt("LoopType", LoopType.START.ordinal());
+            break;
+        case NUMBER_PICKER_END:
+            bundle.putInt("LoopType", LoopType.END.ordinal());
+            break;
+        default:
+            return;
+        }
+
+        bundle.putInt("LoopPointStart", loopPointStart);
+        bundle.putInt("LoopPointEnd", loopPointEnd);
+        bundle.putInt("MusicLength", musicLength);
+        numberpickerDialogFragment.setArguments(bundle);
+        numberpickerDialogFragment.show(getSupportFragmentManager(),
+                                        NumberPickerDialogFragment.class.getSimpleName()
+        );
+    }
+
+    /**
+     * 曲選択ダイアログの実行
+     */
+    private void ExecuteTrackDialog() {
+        if (trackDialogFragment.isResumed()) {
+            return;
+        }
+        if (MainActivity.IsNotClickEvent()) {
+            return;
+        }
+        if (!permissionGranted) {
+            return;
+        }
+
+        trackDialogFragment.show(getSupportFragmentManager(),
+                                 NumberPickerDialogFragment.class.getSimpleName()
+        );
+    }
+
+    /**
      * 音楽操作ボタンの更新処理
      *
      * @param type ボタンタイプ
@@ -586,11 +642,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointRangeBar.setOnRangeBarChangeListener(new RangeBar.OnRangeBarChangeListener() {
             @Override
             public void onIndexChangeListener(RangeBar rangeBar, int leftThumbIndex, int rightThumbIndex) {
-                // ナンバーピッカーから設定した直後は処理しない
-                if (numberpickerUpdate) {
-                    return;
-                }
-
                 UpdateSeekbar(leftThumbIndex, rightThumbIndex);
             }
         });
@@ -602,18 +653,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onClick(View v) {
-                if (trackDialogFragment.isResumed()) {
-                    return;
-                }
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
-                if (!permissionGranted) {
-                    return;
-                }
-                trackDialogFragment.show(getSupportFragmentManager(),
-                                         NumberPickerDialogFragment.class.getSimpleName()
-                );
+                ExecuteTrackDialog();
             }
         });
         buttonMap.put(ButtonType.LOAD, buttonLoad);
@@ -634,9 +674,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonLoopChecking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
                 SetupLoopChecking();
             }
         });
@@ -648,23 +685,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (numberpickerDialogFragment.isResumed()) {
-                    return;
-                }
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
-                // ダイアログに値を渡す
-                Bundle bundle = new Bundle();
-                bundle.putInt("LoopType", LoopType.START.ordinal());
-                bundle.putInt("LoopPointStart", loopPointStart);
-                bundle.putInt("LoopPointEnd", loopPointEnd);
-                bundle.putInt("MusicLength", musicLength);
-                numberpickerDialogFragment.setArguments(bundle);
-
-                numberpickerDialogFragment.show(getSupportFragmentManager(),
-                                                NumberPickerDialogFragment.class.getSimpleName()
-                );
+                ExecuteNumberPickerDialog(ButtonType.NUMBER_PICKER_START);
             }
         });
         buttonMap.put(ButtonType.NUMBER_PICKER_START, buttonNumberPickerStart);
@@ -674,22 +695,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (numberpickerDialogFragment.isResumed()) {
-                    return;
-                }
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
-                Bundle bundle = new Bundle();
-                bundle.putInt("LoopType", LoopType.END.ordinal());
-                bundle.putInt("LoopPointStart", loopPointStart);
-                bundle.putInt("LoopPointEnd", loopPointEnd);
-                bundle.putInt("MusicLength", musicLength);
-                numberpickerDialogFragment.setArguments(bundle);
-
-                numberpickerDialogFragment.show(getSupportFragmentManager(),
-                                                NumberPickerDialogFragment.class.getSimpleName()
-                );
+                ExecuteNumberPickerDialog(ButtonType.NUMBER_PICKER_END);
             }
         });
         buttonMap.put(ButtonType.NUMBER_PICKER_END, buttonNumberPickerEnd);
@@ -814,6 +820,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * シークバー操作でループポイント更新
      */
     private void UpdateSeekbar(int leftThumbIndex, int rightThumbIndex) {
+        // ナンバーピッカーから設定した直後は処理しない
+        if (numberpickerUpdate) {
+            return;
+        }
         if (musicLength <= MUSIC_LENGTH_MIN) {
             return;
         }
@@ -1013,6 +1023,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * ループ確認用の初期化
      */
     private void SetupLoopChecking() {
+        if (MainActivity.IsNotClickEvent()) {
+            return;
+        }
+
         if (!loadCompletedBGM) {
             return;
         }
