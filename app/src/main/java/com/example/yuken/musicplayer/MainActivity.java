@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     }
 
     private enum ButtonType {
+        NONE,
         LOAD,
         START,
         STOP,
@@ -105,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     private Map<ButtonType, Button> buttonMap;
     private Map<TextType, TextView> textMap;
+
+    private ImageButton mediaPlayerButton;
+    private ButtonType mediaPlayerType = ButtonType.NONE;
 
     //
     private int  loopPointStart = 0; // ms
@@ -480,6 +485,52 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         return false;
     }
 
+    /**
+     * 音楽操作ボタンの制御処理
+     */
+    private void ControlMediaPlayer() {
+        if (MainActivity.IsNotClickEvent()) {
+            return;
+        }
+
+        switch (mediaPlayerType) {
+        case START:
+            // 音楽再生
+            audioPlay();
+            break;
+        case STOP:
+            // ループ確認中の場合ループ確認を停止する
+            if (IsLoopChecking()) {
+                TerminateLoopChecking();
+                return;
+            }
+            // 音楽停止
+            audioStop();
+            break;
+        }
+    }
+
+    /**
+     * 音楽操作ボタンの更新処理
+     *
+     * @param type ボタンタイプ
+     */
+    private void UpdateMediaPlayerButton(ButtonType type) {
+        mediaPlayerType = type;
+        int _resource;
+        switch (type) {
+        case START:
+            _resource = R.drawable.ic_play_circle_outline;
+            break;
+        case STOP:
+            _resource = R.drawable.ic_pause_circle_outline;
+            break;
+        default:
+            return;
+        }
+        mediaPlayerButton.setImageResource(_resource);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -568,40 +619,15 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonMap.put(ButtonType.LOAD, buttonLoad);
         ///
 
-        // 音楽開始ボタン
-        Button buttonStart = findViewById(R.id.start);
+        // 音楽操作ボタン
+        ImageButton buttonStart = findViewById(R.id.control);
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
-
-                // 音楽再生
-                audioPlay();
+                ControlMediaPlayer();
             }
         });
-        buttonMap.put(ButtonType.START, buttonStart);
-
-        // 音楽停止ボタン
-        Button buttonStop = findViewById(R.id.stop);
-        buttonStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MainActivity.IsNotClickEvent()) {
-                    return;
-                }
-                // ループ確認中の場合ループ確認を停止する
-                if (IsLoopChecking()) {
-                    TerminateLoopChecking();
-                    return;
-                }
-
-                // 音楽停止
-                audioStop();
-            }
-        });
-        buttonMap.put(ButtonType.STOP, buttonStop);
+        mediaPlayerButton = buttonStart;
 
         // ループテストボタン
         Button buttonLoopChecking = findViewById(R.id.loopTest);
@@ -836,6 +862,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 anArrayMediaPlayer.prepare();
             }
             loadCompletedBGM = true;
+            UpdateMediaPlayerButton(ButtonType.START);
         }
         catch (IOException e1) {
             Log.v("テスト", "[LoadBGM:catch]");
@@ -897,6 +924,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 audioStop();
             }
         });
+
+        UpdateMediaPlayerButton(ButtonType.STOP);
 
         SetupAudioPlay();
     }
@@ -967,6 +996,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             Button btn = buttonMap.get(key);
             btn.setClickable(true);
         }
+
+        UpdateMediaPlayerButton(ButtonType.START);
     }
 
     /**
@@ -1066,6 +1097,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         loopChecking = false;
         loopCheckingAfter = false;
+
+        UpdateMediaPlayerButton(ButtonType.START);
     }
 
     /**
