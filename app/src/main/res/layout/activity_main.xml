@@ -15,7 +15,7 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <Button
+        <ImageButton
             android:id="@+id/loadButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -123,13 +123,14 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <Button
+            <ImageButton
                 android:id="@+id/btnLoopPointStart"
-                android:layout_width="0dip"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1"
-                android:text="S"
-                tools:text="S" />
+                android:adjustViewBounds="true"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_loop_start" />
 
             <TextView
                 android:id="@+id/loopPointStart"
@@ -141,6 +142,20 @@
                 android:textSize="30sp"
                 tools:text="00:00:00" />
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageButton
+                    android:id="@+id/loopTest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_hearing_black" />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/loopPointEnd"
                 android:layout_width="0dip"
@@ -151,13 +166,14 @@
                 android:textSize="30sp"
                 tools:text="00:00:00" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/btnLoopPointEnd"
-                android:layout_width="0dip"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.1"
-                android:text="E"
-                tools:text="E" />
+                android:adjustViewBounds="true"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_loop_end" />
 
         </LinearLayout>
 
@@ -171,13 +187,5 @@
         android:contentDescription="@null"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_play_circle_outline" />
-
-    <Button
-        android:id="@+id/loopTest"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:layout_marginStart="40dp"
-        android:text="test" />
 
 </LinearLayout>

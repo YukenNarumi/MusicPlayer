@@ -15,7 +15,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -105,8 +104,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Map<SeekBarType, SeekBar> seekBarMap;
     private RangeBar                  loopPointRangeBar;
 
-    private Map<ButtonType, Button> buttonMap;
-    private Map<TextType, TextView> textMap;
+    private Map<ButtonType, ImageButton> buttonMap;
+    private Map<TextType, TextView>      textMap;
 
     private ImageButton mediaPlayerButton;
     private ButtonType mediaPlayerType = ButtonType.NONE;
@@ -648,7 +647,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // 曲選択ダイアログ表示ボタン
         trackDialogFragment = new TrackDialogFragment();
-        Button buttonLoad = findViewById(R.id.loadButton);
+        ImageButton buttonLoad = findViewById(R.id.loadButton);
         buttonLoad.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -670,7 +669,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mediaPlayerButton = buttonStart;
 
         // ループテストボタン
-        Button buttonLoopChecking = findViewById(R.id.loopTest);
+        ImageButton buttonLoopChecking = findViewById(R.id.loopTest);
         buttonLoopChecking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -681,7 +680,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // DialogFragment表示をボタンに登録
         numberpickerDialogFragment = new NumberPickerDialogFragment();
-        Button buttonNumberPickerStart = findViewById(R.id.btnLoopPointStart);
+        ImageButton buttonNumberPickerStart = findViewById(R.id.btnLoopPointStart);
         buttonNumberPickerStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -691,7 +690,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonMap.put(ButtonType.NUMBER_PICKER_START, buttonNumberPickerStart);
 
         // ループポイント[End]
-        Button buttonNumberPickerEnd = findViewById(R.id.btnLoopPointEnd);
+        ImageButton buttonNumberPickerEnd = findViewById(R.id.btnLoopPointEnd);
         buttonNumberPickerEnd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -963,7 +962,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             if (key == ButtonType.STOP) {
                 continue;
             }
-            Button btn = buttonMap.get(key);
+            ImageButton btn = buttonMap.get(key);
             btn.setClickable(false);
         }
     }
@@ -1003,7 +1002,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // ボタンの操作禁止
         for (ButtonType key : buttonMap.keySet()) {
-            Button btn = buttonMap.get(key);
+            ImageButton btn = buttonMap.get(key);
             btn.setClickable(true);
         }
 
@@ -1047,7 +1046,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // ボタンの操作禁止
         prevButtonEnabled = new ArrayList<>();
         for (ButtonType key : buttonMap.keySet()) {
-            Button btn = buttonMap.get(key);
+            ImageButton btn = buttonMap.get(key);
             prevButtonEnabled.add(btn.isEnabled());
             if (key == ButtonType.STOP) {
                 continue;
@@ -1101,7 +1100,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // ボタンの操作禁止解除
         _index = 0;
         for (ButtonType key : buttonMap.keySet()) {
-            Button btn = buttonMap.get(key);
+            ImageButton btn = buttonMap.get(key);
             btn.setClickable(prevButtonEnabled.get(_index));
             _index++;
         }
