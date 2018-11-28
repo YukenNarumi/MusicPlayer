@@ -11,16 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Track {
-    public long   id;             //コンテントプロバイダに登録されたID
-    public long   albumId;        //同じくトラックのアルバムのID
-    public long   artistId;       //同じくトラックのアーティストのID
-    public String path;           //実データのPATH
-    public String title;          //トラックタイトル
-    public String album;          //アルバムタイトル
-    public String artist;         //アーティスト名
-    public Uri    uri;            // URI
-    public long   duration;       // 再生時間(ミリ秒)
-    public int    trackNo;        // アルバムのトラックナンバ
+    public long   id;           // コンテントプロバイダに登録されたID
+    public long   albumId;      // 同じくトラックのアルバムのID
+    public long   artistId;     // 同じくトラックのアーティストのID
+    public String path;         // 実データのPATH
+    public String title;        // トラックタイトル
+    public String album;        // アルバムタイトル
+    public String artist;       // アーティスト名
+    public Uri    uri;          // URI
+    public long   duration;     // 再生時間(ミリ秒)
+    public int    trackNo;      // アルバムのトラックナンバ
+    public String albumArt;     // アルバムアート
 
     /**
      * 検索時に使用する取得する列名(カラム名、フィールド名)の配列
@@ -42,7 +43,7 @@ public class Track {
      *
      * @param cursor データベースクエリの検索結果
      */
-    private Track(Cursor cursor) {
+    private Track(Cursor cursor, Context activity) {
         id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
         path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
         title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
@@ -53,6 +54,31 @@ public class Track {
         duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
         trackNo = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK));
         uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
+        albumArt = ImageCache.GetDefaultPath();
+
+        //
+        final String[] _COLUMNS = {
+            MediaStore.Audio.Albums.ALBUM_ART
+        };
+        ContentResolver resolver = activity.getContentResolver();
+        Cursor cursorAlbumArt = resolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                                               _COLUMNS,
+                                               "album='" + album + "'",
+                                               null,
+                                               null
+        );
+        if (cursorAlbumArt == null) {
+            return;
+        }
+        while (cursorAlbumArt.moveToNext()) {
+            String _albumArt = cursorAlbumArt.getString(cursorAlbumArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+            if (_albumArt == null) {
+                continue;
+            }
+            albumArt = _albumArt;
+            break;
+        }
+        cursorAlbumArt.close();
     }
 
     /**
@@ -80,7 +106,7 @@ public class Track {
             if (cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)) < 3000) {
                 continue;
             }
-            tracks.add(new Track(cursor));
+            tracks.add(new Track(cursor, activity));
         }
         cursor.close();
         return tracks;

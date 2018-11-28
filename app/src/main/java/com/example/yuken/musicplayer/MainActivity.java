@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private Map<SeekBarType, SeekBar> seekBarMap;
     private RangeBar                  loopPointRangeBar;
 
+    private Map<ButtonType, ImageView>   imageViewMap;
     private Map<ButtonType, ImageButton> buttonMap;
     private Map<TextType, TextView>      textMap;
 
@@ -594,6 +596,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         setContentView(R.layout.activity_main);
 
         seekBarMap = new HashMap<>();
+        imageViewMap = new HashMap<>();
         buttonMap = new HashMap<>();
         textMap = new HashMap<>();
 
@@ -647,7 +650,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // 曲選択ダイアログ表示ボタン
         trackDialogFragment = new TrackDialogFragment();
-        ImageButton buttonLoad = findViewById(R.id.loadButton);
+        ImageView buttonLoad = findViewById(R.id.loadButton);
         buttonLoad.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -655,7 +658,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 ExecuteTrackDialog();
             }
         });
-        buttonMap.put(ButtonType.LOAD, buttonLoad);
+        imageViewMap.put(ButtonType.LOAD, buttonLoad);
         ///
 
         // 音楽操作ボタン
@@ -958,6 +961,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointRangeBar.setEnabled(false);
 
         // ボタンの操作禁止
+        for (ButtonType key : imageViewMap.keySet()) {
+            ImageView btn = imageViewMap.get(key);
+            btn.setClickable(false);
+        }
         for (ButtonType key : buttonMap.keySet()) {
             if (key == ButtonType.STOP) {
                 continue;
@@ -1001,6 +1008,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         loopPointRangeBar.setEnabled(true);
 
         // ボタンの操作禁止
+        for (ButtonType key : imageViewMap.keySet()) {
+            ImageView btn = imageViewMap.get(key);
+            btn.setClickable(true);
+        }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
             btn.setClickable(true);
@@ -1045,6 +1056,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // ボタンの操作禁止
         prevButtonEnabled = new ArrayList<>();
+        for (ButtonType key : imageViewMap.keySet()) {
+            ImageView btn = imageViewMap.get(key);
+            prevButtonEnabled.add(btn.isEnabled());
+            btn.setClickable(false);
+        }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
             prevButtonEnabled.add(btn.isEnabled());
@@ -1099,6 +1115,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // ボタンの操作禁止解除
         _index = 0;
+        for (ButtonType key : imageViewMap.keySet()) {
+            ImageView btn = imageViewMap.get(key);
+            btn.setClickable(prevButtonEnabled.get(_index));
+            _index++;
+        }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
             btn.setClickable(prevButtonEnabled.get(_index));
@@ -1167,7 +1188,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @param artist 選択した曲のアーティスト
      * @param album  選択した曲が収録されてるアルバム名
      */
-    public void UpdateMusicData(String title, String artist, String album) {
+    public void UpdateMusicData(String title, String artist, String album, String albumArt) {
         TextType[] _keysTextType = {
             TextType.TITLE,
             TextType.ARTIST,
@@ -1180,5 +1201,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         textMap.get(TextType.TITLE).setText(title);
         textMap.get(TextType.ARTIST).setText(artist);
         textMap.get(TextType.ALBUM).setText(album);
+
+        // アルバムアートを更新する
+        ButtonType[] _buttonType = {
+            ButtonType.LOAD,
+            };
+        if (IsNotMapConfigured(imageViewMap, _buttonType)) {
+            return;
+        }
+        ImageView _artworkImageView = imageViewMap.get(ButtonType.LOAD);
+        _artworkImageView.setTag(albumArt);
+        ImageGetTask task = new ImageGetTask(_artworkImageView);
+        task.execute(albumArt);
     }
 }
