@@ -251,6 +251,10 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         }
         mainActivity.ClearMediaPlayerInfo();
         mainActivity.LoadLoopPointDate(item.title);
-        mainActivity.UpdateMusicData(item.title, item.artist, item.album, item.albumArt);
+        mainActivity.UpdateMusicData(item.title,
+                                     item.artist,
+                                     item.album,
+                                     item.GetAlbumArt(getActivityNonNull())
+        );
     }
 }

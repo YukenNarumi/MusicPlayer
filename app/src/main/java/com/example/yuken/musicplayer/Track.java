@@ -21,7 +21,6 @@ public class Track {
     public Uri    uri;          // URI
     public long   duration;     // 再生時間(ミリ秒)
     public int    trackNo;      // アルバムのトラックナンバ
-    public String albumArt;     // アルバムアート
 
     /**
      * 検索時に使用する取得する列名(カラム名、フィールド名)の配列
@@ -54,31 +53,6 @@ public class Track {
         duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
         trackNo = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.TRACK));
         uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-        albumArt = ImageCache.GetDefaultPath();
-
-        //
-        final String[] _COLUMNS = {
-            MediaStore.Audio.Albums.ALBUM_ART
-        };
-        ContentResolver resolver = activity.getContentResolver();
-        Cursor cursorAlbumArt = resolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                                               _COLUMNS,
-                                               "album='" + album + "'",
-                                               null,
-                                               null
-        );
-        if (cursorAlbumArt == null) {
-            return;
-        }
-        while (cursorAlbumArt.moveToNext()) {
-            String _albumArt = cursorAlbumArt.getString(cursorAlbumArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-            if (_albumArt == null) {
-                continue;
-            }
-            albumArt = _albumArt;
-            break;
-        }
-        cursorAlbumArt.close();
     }
 
     /**
@@ -110,5 +84,39 @@ public class Track {
         }
         cursor.close();
         return tracks;
+    }
+
+    /**
+     * アルバムアートのパス取得
+     *
+     * @param activity ダイアログを開いているactivity
+     * @return アルバムアートのパス
+     */
+    public String GetAlbumArt(Context activity) {
+        String _albumArt = ImageCache.GetDefaultPath();
+
+        final String[] _COLUMNS = {
+            MediaStore.Audio.Albums.ALBUM_ART
+        };
+        ContentResolver resolver = activity.getContentResolver();
+        Cursor cursorAlbumArt = resolver.query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                                               _COLUMNS,
+                                               "album='" + album + "'",
+                                               null,
+                                               null
+        );
+        if (cursorAlbumArt == null) {
+            return _albumArt;
+        }
+        while (cursorAlbumArt.moveToNext()) {
+            String _path = cursorAlbumArt.getString(cursorAlbumArt.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+            if (_path == null) {
+                continue;
+            }
+            _albumArt = _path;
+            break;
+        }
+        cursorAlbumArt.close();
+        return _albumArt;
     }
 }
