@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#def"
+    android:background="#000"
     android:gravity="center"
     android:orientation="vertical"
     tools:context=".MainActivity">
@@ -35,10 +35,9 @@
 
             <SeekBar
                 android:id="@+id/seekBarNowTime"
-                style="@style/Widget.AppCompat.SeekBar.Discrete"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:layout_weight="0.1"
+                android:background="#11e3e3e3"
                 android:max="1000"
                 android:progress="0" />
 
@@ -49,7 +48,6 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="40dp"
             android:layout_marginStart="40dp"
-            android:background="#ddf0cc"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -59,8 +57,8 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:gravity="center"
-                android:inputType="time"
-                android:textSize="16dp" />
+                android:textColor="@color/red"
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/title"
@@ -70,6 +68,7 @@
                 android:gravity="center"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:singleLine="true"
+                android:textColor="@color/red"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -81,6 +80,7 @@
                 android:gravity="center"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:singleLine="true"
+                android:textColor="@color/red"
                 android:textStyle="bold" />
 
             <TextView
@@ -91,6 +91,7 @@
                 android:gravity="center"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:singleLine="true"
+                android:textColor="@color/red"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
@@ -139,7 +140,8 @@
                 android:layout_weight="0.4"
                 android:ems="10"
                 android:gravity="start"
-                android:textSize="30sp"
+                android:textColor="@color/red"
+                android:textSize="16sp"
                 tools:text="00:00:00" />
 
             <LinearLayout
@@ -163,7 +165,8 @@
                 android:layout_weight="0.4"
                 android:ems="10"
                 android:gravity="end"
-                android:textSize="30sp"
+                android:textColor="@color/red"
+                android:textSize="16sp"
                 tools:text="00:00:00" />
 
             <ImageButton
@@ -181,8 +184,8 @@
 
     <ImageButton
         android:id="@+id/control"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:adjustViewBounds="true"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
