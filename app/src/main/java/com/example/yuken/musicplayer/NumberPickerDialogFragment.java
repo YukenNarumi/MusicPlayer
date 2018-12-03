@@ -6,7 +6,9 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 
 public class NumberPickerDialogFragment extends BaseDialogFragment {
 
@@ -155,7 +157,8 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
         loopType = MainActivity.fromOrdinal(MainActivity.LoopType.class,
                                             getArgumentsNonNull().getInt("LoopType")
         );
-        String _loopPointKey = (loopType == MainActivity.LoopType.START
+        boolean _loopTypeStart = (loopType == MainActivity.LoopType.START);
+        String _loopPointKey = (_loopTypeStart
                                 ? "LoopPointStart"
                                 : "LoopPointEnd");
         int _loopPoint = getArgumentsNonNull().getInt(_loopPointKey);
@@ -176,6 +179,19 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
             }
         });
 
+
+        ImageButton _closeButton = dialog.findViewById(R.id.numberPickerCloseBtn);
+        _closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                NumberPickerDialogFragment.this.dismiss();
+            }
+        });
+
+        TextView _numberpickerType = dialog.findViewById(R.id.numberPickerType);
+        _numberpickerType.setText(_loopTypeStart
+                                  ? "ループ始点"
+                                  : "ループ終点");
         return dialog;
     }
 
