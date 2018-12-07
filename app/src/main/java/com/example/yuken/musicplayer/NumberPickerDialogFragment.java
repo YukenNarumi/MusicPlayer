@@ -204,8 +204,6 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
         int _milliSecond = numberpickerMilliSecond.getValue();
         int _total       = _minute * UNIT_TIME_MINTES + _second * UNIT_TIME_SECOND + _milliSecond * UNIT_TIME_MILLISECOND;
 
-        // TODO:このタイミングで設定できるか判定する
-
         Log.v("テスト", "SetNumbetPickerrValue:" + loopType);
 
         MainActivity mainActivity = (MainActivity)getActivityNonNull();

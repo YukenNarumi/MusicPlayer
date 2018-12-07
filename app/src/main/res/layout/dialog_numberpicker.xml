@@ -45,7 +45,8 @@
             android:id="@+id/numberPickerMinute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/simple_vertical_line" />
+            android:background="@drawable/simple_vertical_line"
+            android:descendantFocusability="blocksDescendants" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -58,7 +59,8 @@
             android:id="@+id/numberPickerSeconds"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/simple_vertical_line" />
+            android:background="@drawable/simple_vertical_line"
+            android:descendantFocusability="blocksDescendants" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -71,7 +73,8 @@
             android:id="@+id/numberPickerMilliSecond"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/simple_vertical_line" />
+            android:background="@drawable/simple_vertical_line"
+            android:descendantFocusability="blocksDescendants" />
 
     </LinearLayout>
 
