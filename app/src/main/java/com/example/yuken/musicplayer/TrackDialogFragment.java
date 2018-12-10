@@ -27,6 +27,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
     private ImageButton                backButton;
     private ListView                   infoList;
     private String                     selectWordArtist;
+    private Long                       selectArtistID;
     private String                     selectWordAlbum;
     private TrackDetail                trackDetail;
 
@@ -111,7 +112,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
      * アルバム一覧表示
      */
     private void UpdateSceneAlbum() {
-        List             albums  = Album.getItems(getActivityNonNull(), selectWordArtist);
+        List albums = Album.getItems(getActivityNonNull(), selectWordArtist, selectArtistID);
         ListAlbumAdapter adapter = new ListAlbumAdapter(getActivityNonNull(), albums);
         infoList.setAdapter(adapter);
     }
@@ -217,6 +218,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         ListView listView = (ListView)parent;
         Artist   item     = (Artist)listView.getItemAtPosition(position);
         selectWordArtist = "artist='" + item.artist + "'";
+        selectArtistID = item.id;
         UpdateScene(DialogSceneType.ALBUM);
     }
 
@@ -231,6 +233,9 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
         ListView listView = (ListView)parent;
         Album    item     = (Album)listView.getItemAtPosition(position);
         selectWordAlbum = "album='" + item.album + "'";
+        if (selectWordArtist != null) {
+            selectWordAlbum += " and " + selectWordArtist;
+        }
         UpdateScene(DialogSceneType.TRACK);
         trackDetail.ShowAlbumInfo(item);
     }
