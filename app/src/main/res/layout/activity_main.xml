@@ -19,7 +19,7 @@
             android:id="@+id/loadButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/dummy_album_art" />
+            android:background="@drawable/default_select_btn" />
     </LinearLayout>
 
     <LinearLayout
