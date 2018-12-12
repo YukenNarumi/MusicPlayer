@@ -701,6 +701,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
         });
         buttonMap.put(ButtonType.NUMBER_PICKER_END, buttonNumberPickerEnd);
+
+        SetBulkEnabled(false);
     }
 
     /**
@@ -848,11 +850,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public boolean LoadBGM(Uri uri) {
         loadCompletedBGM = false;
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
         ReleaseMediaPlayer();
 
         // インタンスを生成
@@ -875,6 +872,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
             loadCompletedBGM = true;
             UpdateMediaPlayerButton(ButtonType.START);
+
+            SetBulkEnabled(true);
         }
         catch (IOException e1) {
             Log.v("テスト", "[LoadBGM:catch]");
@@ -964,6 +963,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         for (ButtonType key : imageViewMap.keySet()) {
             ImageView btn = imageViewMap.get(key);
             btn.setClickable(false);
+            btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
         }
         for (ButtonType key : buttonMap.keySet()) {
             if (key == ButtonType.STOP) {
@@ -971,6 +971,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             }
             ImageButton btn = buttonMap.get(key);
             btn.setClickable(false);
+            btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
         }
     }
 
@@ -994,7 +995,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
     /**
      * 通常再生時のBGM停止
-     * タン、シークバーの操作制限を行う
+     * ボタン、シークバーの操作制限を行う
      */
     private void TeardownAudioPlay() {
         if (IsLoopChecking()) {
@@ -1011,10 +1012,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         for (ButtonType key : imageViewMap.keySet()) {
             ImageView btn = imageViewMap.get(key);
             btn.setClickable(true);
+            btn.clearColorFilter();
         }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
             btn.setClickable(true);
+            btn.clearColorFilter();
         }
 
         UpdateMediaPlayerButton(ButtonType.START);
@@ -1060,6 +1063,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             ImageView btn = imageViewMap.get(key);
             prevButtonEnabled.add(btn.isEnabled());
             btn.setClickable(false);
+            btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
         }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
@@ -1068,6 +1072,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 continue;
             }
             btn.setClickable(false);
+            btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
         }
 
         int _testStart = this.loopPointEnd - LOOP_POINT_INTERVAL;
@@ -1118,11 +1123,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         for (ButtonType key : imageViewMap.keySet()) {
             ImageView btn = imageViewMap.get(key);
             btn.setClickable(prevButtonEnabled.get(_index));
+            btn.clearColorFilter();
             _index++;
         }
         for (ButtonType key : buttonMap.keySet()) {
             ImageButton btn = buttonMap.get(key);
             btn.setClickable(prevButtonEnabled.get(_index));
+            btn.clearColorFilter();
             _index++;
         }
         while (prevButtonEnabled.remove((Integer)2)) {
@@ -1213,5 +1220,51 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         _artworkImageView.setTag(albumArt);
         ImageGetTask task = new ImageGetTask(_artworkImageView);
         task.execute(albumArt);
+    }
+
+    /**
+     * 一括で有効設定の更新を行う
+     *
+     * @param enabled 設定を有効かするかどうか
+     */
+    private void SetBulkEnabled(boolean enabled) {
+        SetBulkSeekBarInfo(enabled);
+        SetBulkImageButtonInfo(enabled);
+    }
+
+    /**
+     * seekbarの一括設定
+     *
+     * @param enabled 設定を有効かするかどうか
+     */
+    private void SetBulkSeekBarInfo(boolean enabled) {
+        for (SeekBarType key : seekBarMap.keySet()) {
+            SeekBar _seekBar = seekBarMap.get(key);
+            _seekBar.setEnabled(enabled);
+        }
+        loopPointRangeBar.setEnabled(enabled);
+    }
+
+    /**
+     * ImageButtonの一括設定
+     *
+     * @param clickable タップを有効かするかどうか
+     */
+    private void SetBulkImageButtonInfo(boolean clickable) {
+        List<ImageButton> btnList = new ArrayList<>();
+        btnList.add(mediaPlayerButton);
+        for (ButtonType key : buttonMap.keySet()) {
+            btnList.add(buttonMap.get(key));
+        }
+
+        for (ImageButton btn : btnList) {
+            btn.setClickable(clickable);
+            if (clickable) {
+                btn.clearColorFilter();
+            }
+            else {
+                btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
+            }
+        }
     }
 }
