@@ -22,6 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.edmodo.rangebar.RangeBar;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -703,6 +706,13 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         buttonMap.put(ButtonType.NUMBER_PICKER_END, buttonNumberPickerEnd);
 
         SetBulkEnabled(false);
+
+        // 広告用
+        MobileAds.initialize(getApplicationContext(), this.getString(R.string.admob_app_id));
+
+        AdView    mAdView   = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 
     /**

@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "785915981100",
+    "firebase_url": "https://musicplayer-68ed6.firebaseio.com",
+    "project_id": "musicplayer-68ed6",
+    "storage_bucket": "musicplayer-68ed6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785915981100:android:0a859249098f4d3d",
+        "android_client_info": {
+          "package_name": "com.example.yuken.musicplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "785915981100-jmi0cffmbd530hbtg3e8hd6kl25ctkll.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.yuken.musicplayer",
+            "certificate_hash": "3b25d9c1e48c2bf4b83f5aee5ba412f090b1447a"
+          }
+        },
+        {
+          "client_id": "785915981100-889kvgantirg7ac5g3cqdh3j0ivbcb8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6KLSvHQYJJJxHCPA_DNuxXhUcdxxtXHE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785915981100-889kvgantirg7ac5g3cqdh3j0ivbcb8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
