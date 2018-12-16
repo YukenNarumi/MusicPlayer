@@ -22,8 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.edmodo.rangebar.RangeBar;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 
 import java.io.IOException;
@@ -48,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private static final int    MUSIC_LENGTH_MIN        = 10000;
     // ループポイントの始点・終点設定に必要な間隔(ms)
     private static final int    LOOP_POINT_INTERVAL     = 5000;
+    // 全画面広告を表示するのに必要な間隔(ms)
+    private static final int    REQUIRED_ELAPSED_TIME   = 1000 * 60 * 30;
     // 更新処理の間隔(ms)
     private static final int    updateIntarval          = 5;
     // ループポイント(終点)の受付猶予(ms)
@@ -89,6 +93,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         ALBUM,
         LOOP_START,
         LOOP_END,
+        END
+    }
+
+    private enum InterstitialState {
+        NONE,
+        LOAD,
+        FINISH,
+        SHOW,
         END
     }
 
@@ -137,6 +149,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private List<Boolean> prevButtonEnabled;
 
     private String BGMTitle;
+
+    private InterstitialAd    interstitialAd;
+    private InterstitialState interstitialState;
+    private boolean           bgmLooop; // BGMが一度でもループしたか
+    private long              bgmStartTime; // BGM再生開始時間
     ///
 
     /**
@@ -708,11 +725,37 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         SetBulkEnabled(false);
 
         // 広告用
+        // バナー広告
         MobileAds.initialize(getApplicationContext(), this.getString(R.string.admob_app_id));
-
         AdView    mAdView   = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        // 全画面広告
+        interstitialAd = new InterstitialAd(this);
+        interstitialAd.setAdUnitId(this.getString(R.string.admob_app_interstitial_id));
+        interstitialAd.setAdListener(new AdListener() {
+            // 広告が閉じられた時
+            public void onAdClosed() {
+                // 次の広告を読み込む
+                interstitialAd.loadAd(new AdRequest.Builder().build());
+                interstitialState = InterstitialState.LOAD;
+            }
+
+            //広告がロードできた時
+            public void onAdLoaded() {
+                interstitialState = InterstitialState.FINISH;
+            }
+
+            //広告がロードできなかった時
+            public void onAdFailedToLoad(int i) {
+                //super.onAdFailedToLoad(i);
+                interstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+        });
+        interstitialState = InterstitialState.NONE;
+        bgmLooop = false;
+        bgmStartTime = 0;
     }
 
     /**
@@ -771,6 +814,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             this.arrayMediaPlayer[_nextID].start();
             this.playNumber = _nextID;
             ///
+            bgmLooop = true;
 
             if (IsLoopChecking()) {
                 loopChecking = false;
@@ -780,6 +824,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         this.preTime = System.currentTimeMillis();
 
         m_handler.postDelayed(this, updateIntarval);
+
+        ShowInterstitialAdMob();
     }
 
     /**
@@ -935,6 +981,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
 
         this.preTime = System.currentTimeMillis();
+        this.bgmStartTime = System.currentTimeMillis();
+        bgmLooop = false;
 
         SaveLoopPointDate(BGMTitle);
 
@@ -949,6 +997,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         UpdateMediaPlayerButton(ButtonType.STOP);
 
         SetupAudioPlay();
+
+        LoadInterstitialAdMob();
     }
 
     /**
@@ -1001,6 +1051,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         this.arrayMediaPlayer[this.playNumber].pause();
 
         TeardownAudioPlay();
+
+        bgmLooop = false;
     }
 
     /**
@@ -1276,5 +1328,60 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
             }
         }
+    }
+
+    /**
+     * インタースティシャル広告の読み込み
+     */
+    private void LoadInterstitialAdMob() {
+        if (interstitialAd == null) {
+            return;
+        }
+        if (interstitialState != InterstitialState.NONE) {
+            return;
+        }
+/*
+        if (interstitialAd.isLoading()) {
+            return;
+        }
+        if (interstitialAd.isLoaded()) {
+            return;
+        }
+*/
+        interstitialAd.loadAd(new AdRequest.Builder().build());
+        Log.v("interstitialAd", "[LoadInterstitialAdMob]");
+    }
+
+    /**
+     * インタースティシャル広告表示
+     */
+    private void ShowInterstitialAdMob() {
+        if (interstitialAd == null) {
+            Log.v("interstitialAd", "[ShowInterstitialAdMob:interstitialAd == null]");
+            return;
+        }
+        if (interstitialState != InterstitialState.FINISH) {
+            Log.v("interstitialAd",
+                  "[ShowInterstitialAdMob:interstitialState == " + interstitialState + "]"
+            );
+            return;
+        }
+/*
+        if (!interstitialAd.isLoaded()) {
+            return;
+        }
+*/
+        if (!bgmLooop) {
+            Log.v("interstitialAd", "[ShowInterstitialAdMob:!bgmLooop]");
+            return;
+        }
+        if (preTime - bgmStartTime < REQUIRED_ELAPSED_TIME) {
+            Log.v("interstitialAd", "[ShowInterstitialAdMob:" + (preTime - bgmStartTime) + "]");
+            return;
+        }
+        interstitialAd.show();
+        interstitialState = InterstitialState.SHOW;
+
+        Log.v("interstitialAd", "[ShowInterstitialAdMob:success]");
     }
 }
