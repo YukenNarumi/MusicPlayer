@@ -16,7 +16,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -81,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         LOOP_CHECKING,
         NUMBER_PICKER_START,
         NUMBER_PICKER_END,
+        LICENSE,
         END
     }
 
@@ -717,14 +717,14 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mAdView.loadAd(adRequest);
 
         // ライセンス表示用ボタン
-        Button btn_oss = findViewById(R.id.btn_oss);
+        ImageButton btn_oss = findViewById(R.id.btn_oss);
         btn_oss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, LicenseActivity.class);
-                startActivity(intent);
+                ShowLicenseActivity();
             }
         });
+        buttonMap.put(ButtonType.LICENSE, btn_oss);
     }
 
     /**
@@ -1288,5 +1288,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 btn.setColorFilter(getResources().getColor(R.color.btnGrayOut));
             }
         }
+    }
+
+    /**
+     * ライセンス表示用アクティビティ表示処理
+     */
+    private void ShowLicenseActivity() {
+        if (MainActivity.IsNotClickEvent()) {
+            return;
+        }
+        Intent intent = new Intent(MainActivity.this, LicenseActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
     }
 }
