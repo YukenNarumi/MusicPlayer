@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 28
@@ -28,6 +29,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':rangebar')
+    implementation 'team.birdhead.licenseview:licenseview:1.0.0'
 }
 
 project.ext {
@@ -58,4 +60,6 @@ project.androidVariants.all { variant ->
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
+repositories {
+    maven { url 'http://team-birdhead.github.io/maven' }
+}

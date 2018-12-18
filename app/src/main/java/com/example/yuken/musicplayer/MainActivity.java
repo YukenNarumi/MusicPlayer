@@ -1,6 +1,7 @@
 package com.example.yuken.musicplayer;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -15,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -713,6 +715,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         AdView    mAdView   = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        // ライセンス表示用ボタン
+        Button btn_oss = findViewById(R.id.btn_oss);
+        btn_oss.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, LicenseActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     /**
