@@ -840,12 +840,32 @@ public class RangeBar extends View {
 
         // If the user has moved their finger outside the range of the bar,
         // do not move the thumbs past the edge.
-        if (x < mBar.getLeftX() || x > mBar.getRightX()) {
-            // Do nothing.
-        } else {
+// <<<<<<<<<<<<<<<<
+/*
+* 2018.12.18
+* Yuken Narumi
+* Fixed symptom that bar does not reach minimum / maximum value when sliding.
+*/
+//        if (x < mBar.getLeftX() || x > mBar.getRightX()) {
+//            // Do nothing.
+//        } else {
+//            thumb.setX(x);
+//            invalidate();
+//        }
+// ================
+        if (x < mBar.getLeftX()) {
+            thumb.setX(mBar.getLeftX());
+            invalidate();
+        }
+        else if (x > mBar.getRightX()) {
+            thumb.setX(mBar.getRightX());
+            invalidate();
+        }
+        else {
             thumb.setX(x);
             invalidate();
         }
+// >>>>>>>>>>>>>>>>
     }
 
     // Inner Classes ///////////////////////////////////////////////////////////
