@@ -303,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public void ClearMediaPlayerInfo() {
         if (IsNotMediaPlayer()) {
             Toast.makeText(getApplication(),
-                           "Error: Call timing is incorrect [ClearMediaPlayerInfo()]",
+                           this.getString(R.string.fatal_error_no_set_media_player),
                            Toast.LENGTH_SHORT
             ).show();
             return;
@@ -467,7 +467,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             );
         }
         else {
-            Toast toast = Toast.makeText(this, "許可してください", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this,
+                                         this.getString(R.string.permission_request),
+                                         Toast.LENGTH_SHORT
+            );
             toast.show();
 
             ActivityCompat.requestPermissions(this,
@@ -564,6 +567,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             return;
         }
         if (!permissionGranted) {
+            checkPermission();
             return;
         }
 
@@ -749,7 +753,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         else {
             permissionGranted = false;
             // それでも拒否された時の対応
-            Toast toast = Toast.makeText(this, "何もできません", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(this,
+                                         this.getString(R.string.permission_denied),
+                                         Toast.LENGTH_SHORT
+            );
             toast.show();
         }
     }
@@ -803,8 +810,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     public void UpdateNumbetPickerr(LoopType dialogType, int loopPoint) {
         // 曲の再生時間超えたら更新しない
         if (loopPoint < 0 || musicLength < loopPoint) {
-            String _errorText = "Error: exceeded reproducing time.";
-            _errorText += "[" + dataFormat.format(musicLength);
+            String _errorText = this.getString(R.string.error_numberpicker_too_time);
+            _errorText += "\n[" + dataFormat.format(musicLength);
             _errorText += " > " + dataFormat.format(loopPoint) + "]";
             Toast.makeText(getApplication(), _errorText, Toast.LENGTH_SHORT).show();
             return;
@@ -912,24 +919,28 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private void audioPlay() {
         if (!loadCompletedBGM) {
-            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplication(),
+                           this.getString(R.string.error_bgm_loading_uncompleted),
+                           Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
         int _difference = loopPointEnd - loopPointStart;
         if (_difference < LOOP_POINT_INTERVAL) {
             // ループ間隔が不十分
-            Toast.makeText(getApplication(),
-                           "Error: Insufficient loop spacing. [" + _difference + " < " + LOOP_POINT_INTERVAL + "]",
-                           Toast.LENGTH_SHORT
-            ).show();
+            String _errorText = this.getString(R.string.error_bgm_Insufficient_loop_interval_01);
+            _errorText += "\n" + this.getString(R.string.error_bgm_Insufficient_loop_interval_02);
+            _errorText += (double)(LOOP_POINT_INTERVAL / 1000);
+            _errorText += this.getString(R.string.error_bgm_Insufficient_loop_interval_03);
+            Toast.makeText(getApplication(), _errorText, Toast.LENGTH_SHORT).show();
             return;
         }
         ///
 
         if (IsPlayingMediaPlayer()) {
             Toast.makeText(getApplication(),
-                           "Error: playing MediaPlayer.",
+                           this.getString(R.string.error_bgm_is_played),
                            Toast.LENGTH_SHORT
             ).show();
             return;
@@ -1002,7 +1013,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private void audioStop() {
         if (!loadCompletedBGM) {
-            Toast.makeText(getApplication(), "Error: read audio file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplication(),
+                           this.getString(R.string.error_bgm_loading_uncompleted),
+                           Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 

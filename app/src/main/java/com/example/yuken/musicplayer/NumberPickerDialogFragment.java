@@ -190,8 +190,8 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
 
         TextView _numberpickerType = dialog.findViewById(R.id.numberPickerType);
         _numberpickerType.setText(_loopTypeStart
-                                  ? "ループ始点"
-                                  : "ループ終点");
+                                  ? this.getString(R.string.numberpicker_type_start)
+                                  : this.getString(R.string.numberpicker_type_end));
         return dialog;
     }
 

@@ -4,4 +4,18 @@
     <string name="stop">stop</string>
     <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
     <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+
+    <string name="numberpicker_type_start">ループ始点</string>
+    <string name="numberpicker_type_end">ループ終点</string>
+    <string name="permission_request">ストレージへのアクセスを許可してください</string>
+    <string name="permission_denied">許可されなかったため曲の検索が行えません</string>
+
+    <string name="error_bgm_loading_uncompleted">曲が読み込まれていません</string>
+    <string name="error_bgm_Insufficient_loop_interval_01">ループの間隔が不十分です</string>
+    <string name="error_bgm_Insufficient_loop_interval_02">間隔が</string>
+    <string name="error_bgm_Insufficient_loop_interval_03">秒以上となるようにしてください</string>
+    <string name="error_bgm_is_played">曲は再生中です</string>
+    <string name="error_numberpicker_too_time">再生時間を超えています</string>
+
+    <string name="fatal_error_no_set_media_player">曲が読み込まれていません</string>
 </resources>
