@@ -2,6 +2,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    // signingConfigs
+    apply from: 'signingConfigs/release.gradle', to: android
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.yuken.musicplayer"
@@ -13,8 +16,11 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            debuggable false
+            minifyEnabled true
+            useProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
