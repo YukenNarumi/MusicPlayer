@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Track {
+    // 検索結果に含める最小再生時間(ms)
+    private static final long MIN_REQUIRED_DURATION = 6000;
+
     public long   id;           // コンテントプロバイダに登録されたID
     public long   albumId;      // 同じくトラックのアルバムのID
     public long   artistId;     // 同じくトラックのアーティストのID
@@ -77,7 +80,7 @@ public class Track {
         }
 
         while (cursor.moveToNext()) {
-            if (cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)) < 3000) {
+            if (cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION)) < MIN_REQUIRED_DURATION) {
                 continue;
             }
             tracks.add(new Track(cursor, activity));
