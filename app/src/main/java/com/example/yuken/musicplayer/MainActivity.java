@@ -1257,7 +1257,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         ImageView _artworkImageView = imageViewMap.get(ButtonType.LOAD);
         _artworkImageView.setTag(albumArt);
         ImageGetTask task = new ImageGetTask(_artworkImageView);
-        task.execute(albumArt);
+        ImageGetTask.Params _param = new ImageGetTask.Params(albumArt,
+                                                             ImageGetTask.Params.Type.DEFAULT
+        );
+        task.execute(_param);
     }
 
     /**

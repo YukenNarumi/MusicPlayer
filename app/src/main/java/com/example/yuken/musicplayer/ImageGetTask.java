@@ -6,10 +6,65 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.widget.ImageView;
 
-public class ImageGetTask extends AsyncTask<String, Void, Bitmap> {
+public class ImageGetTask extends AsyncTask<ImageGetTask.Params, Void, Bitmap> {
+    public static class Params {
+        public enum Type {
+            DEFAULT,
+            SLIM
+        }
+
+        private String path;
+        private Type   type;
+
+        /**
+         * デフォルトコンストラクタ
+         *
+         * @param _path 画像パス
+         * @param _type 画像タイプ
+         */
+        Params(String _path, Type _type) {
+            path = _path;
+            type = _type;
+        }
+
+        /**
+         * @return キャッシュキーに追加する文字
+         */
+        private String GetPathAddWord() {
+            String _key = "";
+            if (type == Type.SLIM) {
+                return "_slim";
+            }
+            return _key;
+        }
+
+        /**
+         * @return 画像パス
+         */
+        private String GetPath() {
+            return path;
+        }
+
+        /**
+         * @return キャッシュ用画像パス
+         */
+        public String GetCachePath() {
+            return path + GetPathAddWord();
+        }
+
+        /**
+         * @return 表示画像が縮小のものかどうか
+         */
+        private boolean IsSlim() {
+            return (type == Type.SLIM);
+        }
+    }
+
     // アルバムアート用画像サイズ
-    private final int ALBUM_ART_IMAGE_WIDTH  = 72;
-    private final int ALBUM_ART_IMAGE_HEIGHT = 72;
+    private final static int ALBUM_ART_IMAGE_WIDTH       = 200;
+    private final static int ALBUM_ART_IMAGE_HEIGHT      = 200;
+    private final static int ALBUM_ART_SLIM_IMAGE_WIDTH  = 72;
+    private final static int ALBUM_ART_SLIM_IMAGE_HEIGHT = 72;
 
     @SuppressLint("StaticFieldLeak")
     private ImageView image;
@@ -34,12 +89,22 @@ public class ImageGetTask extends AsyncTask<String, Void, Bitmap> {
      * @return 非同期処理で取得した画像
      */
     @Override
-    protected Bitmap doInBackground(String... params) {
-        Bitmap bitmap = ImageCache.getImage(params[0]);
-        if (bitmap == null) {
-            bitmap = decodeBitmap(params[0], ALBUM_ART_IMAGE_WIDTH, ALBUM_ART_IMAGE_HEIGHT);
-            ImageCache.setImage(params[0], bitmap);
+    protected Bitmap doInBackground(Params... params) {
+        Params _param = params[0];
+        Bitmap bitmap = ImageCache.getImage(_param.GetCachePath());
+        if (bitmap != null) {
+            return bitmap;
         }
+
+        int _width  = ALBUM_ART_IMAGE_WIDTH;
+        int _height = ALBUM_ART_IMAGE_HEIGHT;
+        if (_param.IsSlim()) {
+            _width = ALBUM_ART_SLIM_IMAGE_WIDTH;
+            _height = ALBUM_ART_SLIM_IMAGE_HEIGHT;
+        }
+        bitmap = decodeBitmap(_param.GetPath(), _width, _height);
+        ImageCache.setImage(_param.GetCachePath(), bitmap);
+
         return bitmap;
     }
 

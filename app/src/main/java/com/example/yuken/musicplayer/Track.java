@@ -97,6 +97,7 @@ public class Track {
      */
     public String GetAlbumArt(Context activity) {
         String _albumArt = ImageCache.GetDefaultPath();
+        ImageCache.CacheDefault(activity.getResources());
 
         final String[] _COLUMNS = {
             MediaStore.Audio.Albums.ALBUM_ART

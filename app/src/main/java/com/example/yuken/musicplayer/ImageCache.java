@@ -15,6 +15,15 @@ public class ImageCache {
      * @return ID
      */
     private static int GetDefaultID() {
+        return R.drawable.dummy_album_art;
+    }
+
+    /**
+     * 縮小版デフォルト画像ID取得
+     *
+     * @return ID
+     */
+    private static int GetDefaultSlimID() {
         return R.drawable.dummy_album_art_slim;
     }
 
@@ -37,20 +46,29 @@ public class ImageCache {
     }
 
     /**
-     * デフォルト画像がキャッシュされていない場合キャッシュする
+     * デフォルト画像をキャッシュする
      *
      * @param res イメージデータを含むリソースオブジェクト
      */
     public static void CacheDefault(Resources res) {
-        String path   = GetDefaultPath();
-        Bitmap bitmap = ImageCache.getImage(path);
+        CacheDefaultImage(res, ImageGetTask.Params.Type.DEFAULT, GetDefaultID());
+        CacheDefaultImage(res, ImageGetTask.Params.Type.SLIM, GetDefaultSlimID());
+    }
 
+    /**
+     * デフォルト画像がキャッシュされていない場合キャッシュする
+     *
+     * @param res イメージデータを含むリソースオブジェクト
+     */
+    private static void CacheDefaultImage(Resources res, ImageGetTask.Params.Type type, int id) {
+        ImageGetTask.Params _param = new ImageGetTask.Params(GetDefaultPath(), type);
+        Bitmap              bitmap = ImageCache.getImage(_param.GetCachePath());
         if (bitmap != null) {
             return;
         }
 
-        bitmap = BitmapFactory.decodeResource(res, GetDefaultID());
-        ImageCache.setImage(path, bitmap);
+        bitmap = BitmapFactory.decodeResource(res, id);
+        ImageCache.setImage(_param.GetCachePath(), bitmap);
     }
 
     /**

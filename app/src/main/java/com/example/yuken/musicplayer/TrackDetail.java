@@ -85,7 +85,8 @@ public class TrackDetail {
             ImageCache.CacheDefault(Mcontext.getResources());
         }
         artworkImageView.setTag(path);
-        ImageGetTask task = new ImageGetTask(artworkImageView);
-        task.execute(path);
+        ImageGetTask        task   = new ImageGetTask(artworkImageView);
+        ImageGetTask.Params _param = new ImageGetTask.Params(path, ImageGetTask.Params.Type.SLIM);
+        task.execute(_param);
     }
 }
