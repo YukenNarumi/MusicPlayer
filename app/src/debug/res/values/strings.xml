@@ -3,8 +3,8 @@
     <string name="start">start</string>
     <string name="stop">stop</string>
     <string name="admob_test_device_id_01">5CE0CB2368FD8B26FAD8456A7CF92557</string>
-    <string name="banner_ad_unit_id">ca-app-pub-8329337290962155/9502393266</string>
-    <string name="admob_app_id">ca-app-pub-8329337290962155~6958268203</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 
     <string name="numberpicker_type_start">ループ始点</string>
     <string name="numberpicker_type_end">ループ終点</string>

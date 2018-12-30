@@ -718,8 +718,9 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         // 広告用
         // バナー広告
         MobileAds.initialize(getApplicationContext(), this.getString(R.string.admob_app_id));
-        AdView    mAdView   = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR)  // エミュレーター
+            .addTestDevice(this.getString(R.string.admob_test_device_id_01)).build();
         mAdView.loadAd(adRequest);
 
         // ライセンス表示用ボタン
