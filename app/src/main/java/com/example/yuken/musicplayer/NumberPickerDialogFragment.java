@@ -3,7 +3,6 @@ package com.example.yuken.musicplayer;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -145,9 +144,9 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
 
         // 元画面から値を取得
         int _musicLength = getArgumentsNonNull().getInt("MusicLength");
-        Log.v("テスト",
-              "ダイアログ値渡しテスト:" + ConvertMaxTimeToMintes(_musicLength) + "/" + ConvertMaxTimeToSecond(
-                  _musicLength) + "/" + ConvertMaxTimeToMilliSecond(_musicLength)
+        DebugLog.v("テスト",
+                   "ダイアログ値渡しテスト:" + ConvertMaxTimeToMintes(_musicLength) + "/" + ConvertMaxTimeToSecond(
+                       _musicLength) + "/" + ConvertMaxTimeToMilliSecond(_musicLength)
         );
         numberpickerMinute.setMaxValue(ConvertMaxTimeToMintes(_musicLength));
         numberpickerSecond.setMaxValue(ConvertMaxTimeToSecond(_musicLength));
@@ -162,9 +161,9 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
                                 ? "LoopPointStart"
                                 : "LoopPointEnd");
         int _loopPoint = getArgumentsNonNull().getInt(_loopPointKey);
-        Log.v("テスト",
-              "ダイアログ値渡しテスト:" + ConvertTimeToMintes(_loopPoint) + "/" + ConvertTimeToSecond(
-                  _loopPoint) + "/" + ConvertTimeToMilliSecond(_loopPoint)
+        DebugLog.v("テスト",
+                   "ダイアログ値渡しテスト:" + ConvertTimeToMintes(_loopPoint) + "/" + ConvertTimeToSecond(
+                       _loopPoint) + "/" + ConvertTimeToMilliSecond(_loopPoint)
         );
         numberpickerMinute.setValue(ConvertTimeToMintes(_loopPoint));
         numberpickerSecond.setValue(ConvertTimeToSecond(_loopPoint));
@@ -204,7 +203,7 @@ public class NumberPickerDialogFragment extends BaseDialogFragment {
         int _milliSecond = numberpickerMilliSecond.getValue();
         int _total       = _minute * UNIT_TIME_MINTES + _second * UNIT_TIME_SECOND + _milliSecond * UNIT_TIME_MILLISECOND;
 
-        Log.v("テスト", "SetNumbetPickerrValue:" + loopType);
+        DebugLog.v("テスト", "SetNumbetPickerrValue:" + loopType);
 
         MainActivity mainActivity = (MainActivity)getActivityNonNull();
         mainActivity.UpdateNumbetPickerr(loopType, _total);

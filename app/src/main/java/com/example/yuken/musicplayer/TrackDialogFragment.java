@@ -3,7 +3,6 @@ package com.example.yuken.musicplayer;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -46,7 +45,7 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
     private void UpdateBackPrev() {
         int _size = prevSceneType.size();
         if (_size <= 0) {
-            Log.d("debug", "要素が無い");
+            DebugLog.d("debug", "要素が無い");
             return;
         }
 
@@ -112,7 +111,10 @@ public class TrackDialogFragment extends BaseDialogFragment implements AdapterVi
      * アルバム一覧表示
      */
     private void UpdateSceneAlbum() {
-        List albums = Album.getItems(getActivityNonNull(), selectWordArtist, selectArtistID);
+        List             albums  = Album.getItems(getActivityNonNull(),
+                                                  selectWordArtist,
+                                                  selectArtistID
+        );
         ListAlbumAdapter adapter = new ListAlbumAdapter(getActivityNonNull(), albums);
         infoList.setAdapter(adapter);
     }

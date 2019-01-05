@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -154,16 +153,16 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private <T, U> boolean IsNotMapConfigured(Map<T, U> map, T[] keys) {
         if (map == null) {
-            Log.v("テスト", "[IsMapDuplicate:map == null]");
+            DebugLog.v("テスト", "[IsMapDuplicate:map == null]");
             return true;
         }
         for (T key : keys) {
             if (key == null) {
-                Log.v("テスト", "[IsMapDuplicate:key == null]");
+                DebugLog.v("テスト", "[IsMapDuplicate:key == null]");
                 return true;
             }
             if (map.get(key) == null) {
-                Log.v("テスト", "[IsMapDuplicate:map.get(" + key + ") == null]");
+                DebugLog.v("テスト", "[IsMapDuplicate:map.get(" + key + ") == null]");
                 return true;
             }
         }
@@ -181,11 +180,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private <T, U> boolean CanNotAddMap(Map<T, U> map, T key) {
         if (map == null) {
-            Log.v("テスト", "[CanNotAddMap:map == null]");
+            DebugLog.v("テスト", "[CanNotAddMap:map == null]");
             return true;
         }
         if (map.get(key) != null) {
-            Log.v("テスト", "[CanNotAddMap:map.get(" + key + ") == null]");
+            DebugLog.v("テスト", "[CanNotAddMap:map.get(" + key + ") == null]");
             return true;
         }
         return false;
@@ -255,19 +254,19 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private int CalculateProgressToTime(int progressValue, int progressMax, int musicLength) {
         if (progressValue <= 0 || progressMax <= 0 || musicLength <= 0) {
-            Log.v("テスト", "[CalculateProgressToTime] = 0");
+            DebugLog.v("テスト", "[CalculateProgressToTime] = 0");
             return 0;
         }
 
         if (progressMax <= progressValue) {
-            Log.v("テスト", "[CalculateProgressToTime] = " + musicLength + " / " + progressMax);
+            DebugLog.v("テスト", "[CalculateProgressToTime] = " + musicLength + " / " + progressMax);
             return musicLength;
         }
 
         double _percent   = (double)progressValue / (double)progressMax;
         double _calculate = (double)musicLength * _percent;
-        Log.v("テスト",
-              "[CalculateProgressToTime:" + _calculate + " = " + musicLength + " * (" + progressValue + " / " + progressMax + ")"
+        DebugLog.v("テスト",
+                   "[CalculateProgressToTime:" + _calculate + " = " + musicLength + " * (" + progressValue + " / " + progressMax + ")"
         );
         return (int)_calculate;
     }
@@ -282,19 +281,19 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      */
     private int CalculateTimeToProgress(int musicValue, int musicLength, int progressMax) {
         if (musicValue <= 0 || progressMax <= 0 || musicLength <= 0) {
-            Log.v("テスト", "[CalculateTimeToProgress] = 0");
+            DebugLog.v("テスト", "[CalculateTimeToProgress] = 0");
             return 0;
         }
 
         if (musicLength <= musicValue) {
-            Log.v("テスト", "[CalculateTimeToProgress] = " + musicLength + " / " + progressMax);
+            DebugLog.v("テスト", "[CalculateTimeToProgress] = " + musicLength + " / " + progressMax);
             return progressMax;
         }
 
         double _percent   = (double)musicValue / (double)musicLength;
         double _calculate = (double)progressMax * _percent;
-        Log.v("テスト",
-              "[CalculateTimeToProgress:" + _calculate + " = " + musicLength + " * (" + musicValue + " / " + progressMax + ")"
+        DebugLog.v("テスト",
+                   "[CalculateTimeToProgress:" + _calculate + " = " + musicLength + " * (" + musicValue + " / " + progressMax + ")"
         );
         return (int)_calculate;
     }
@@ -865,7 +864,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
         int _max = CALCULATE_SEEKBAR_COUNT;
 
-        Log.v("テスト", "[UpdateSeekbar:" + leftThumbIndex + " - " + rightThumbIndex + "]");
+        DebugLog.v("テスト", "[UpdateSeekbar:" + leftThumbIndex + " - " + rightThumbIndex + "]");
 
         loopPointStart = CalculateProgressToTime(leftThumbIndex, _max, musicLength);
         loopPointEnd = CalculateProgressToTime(rightThumbIndex, _max, musicLength);
@@ -892,7 +891,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
 
         // URIから音楽ファイルを読み込む
         try {
-            Log.v("テスト", "[LoadBGM:try]");
+            DebugLog.v("テスト", "[LoadBGM:try]");
             // 音量調整を端末のボタンに任せる
             setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -908,12 +907,12 @@ public class MainActivity extends AppCompatActivity implements Runnable {
             SetBulkEnabled(true);
         }
         catch (IOException e1) {
-            Log.v("テスト", "[LoadBGM:catch]");
+            DebugLog.v("テスト", "[LoadBGM:catch]");
             ReleaseMediaPlayer();
             e1.printStackTrace();
             return false;
         }
-        Log.v("テスト", "[LoadBGM:success]");
+        DebugLog.v("テスト", "[LoadBGM:success]");
         return true;
     }
 
@@ -967,7 +966,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         this.arrayMediaPlayer[this.playNumber].setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                Log.d("debug", "end of audio");
+                DebugLog.d("debug", "end of audio");
                 audioStop();
             }
         });
@@ -1200,7 +1199,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
      * @param title BGM名
      */
     public void LoadLoopPointDate(String title) {
-        Log.v("テスト", "[LoadLoopPointDate:" + title + "]");
+        DebugLog.v("テスト", "[LoadLoopPointDate:" + title + "]");
 
         BGMTitle = title;
 

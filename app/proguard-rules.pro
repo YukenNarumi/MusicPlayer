@@ -20,14 +20,4 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# log出力の制御処理
--assumenosideeffects public class android.util.Log {
-    public static *** v(...);
-    public static *** d(...);
-    public static *** i(...);
-    public static *** w(...);
-    public static *** e(...);
-    public static *** wtf(...);
-}
-
 -keep interface com.birbit.android.jobqueue.** { *; }
